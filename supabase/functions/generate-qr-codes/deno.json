@@ -1,0 +1,10 @@
+{
+  "lock": false,
+  "tasks": {
+    "test": "deno test --allow-none",
+    "check": "deno check index.ts"
+  },
+  "fmt": {
+    "exclude": ["**/*"]
+  }
+}

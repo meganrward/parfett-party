@@ -26,7 +26,14 @@ const conventions = {
 
 export default tseslint.config(
   {
-    ignores: ['**/dist/**', '**/coverage/**', '**/storybook-static/**', '**/node_modules/**'],
+    ignores: [
+      '**/dist/**',
+      '**/coverage/**',
+      '**/storybook-static/**',
+      '**/node_modules/**',
+      // Deno runtime — type-checked with `deno check`, tested with `deno test`.
+      'supabase/functions/**',
+    ],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
