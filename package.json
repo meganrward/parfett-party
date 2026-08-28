@@ -26,7 +26,8 @@
     "functions:serve": "supabase functions serve",
     "functions:deploy": "supabase functions deploy generate-qr-codes",
     "bootstrap:super-admin": "tsx --env-file-if-exists=supabase/scripts/.env supabase/scripts/bootstrap-super-admin.ts",
-    "seed:test-party": "tsx --env-file-if-exists=supabase/scripts/.env supabase/scripts/seed-test-party.ts"
+    "seed:test-party": "tsx --env-file-if-exists=supabase/scripts/.env supabase/scripts/seed-test-party.ts",
+    "unseed:test-party": "tsx --env-file-if-exists=supabase/scripts/.env supabase/scripts/delete-test-party.ts"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",

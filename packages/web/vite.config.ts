@@ -15,5 +15,6 @@ export default defineConfig({
       { find: '@parfett/design-system/tokens.css', replacement: dsSrc('tokens/tokens.css') },
     ],
   },
-  server: { port: 5173 },
+  // Dedicated port so it never collides with other local dev servers.
+  server: { port: 5273, strictPort: true },
 });
