@@ -7,4 +7,9 @@ describe('App', () => {
     render(<App />);
     expect(screen.getByRole('heading', { name: 'Parfett Party' })).toBeInTheDocument();
   });
+
+  it('mounts a design-system Button', () => {
+    render(<App />);
+    expect(screen.getByRole('button', { name: 'Placeholder action' })).toHaveClass('pf-button');
+  });
 });

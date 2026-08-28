@@ -1,11 +1,16 @@
 import { HashRouter, Route, Routes } from 'react-router-dom';
-import { color, space } from '@parfett/design-system';
+import { Button, Card, Heading, Stack } from '@parfett/design-system';
 
 function Placeholder({ title }: { title: string }) {
   return (
-    <main style={{ maxWidth: 560, margin: '0 auto', padding: space[5] }}>
-      <h1 style={{ color: color.brand }}>{title}</h1>
-      <p style={{ color: color.textMuted }}>Coming soon.</p>
+    <main style={{ maxWidth: 560, margin: '0 auto', padding: '1.5rem' }}>
+      <Card>
+        <Stack gap={4}>
+          <Heading level={1}>{title}</Heading>
+          <p style={{ margin: 0, color: 'var(--pf-color-text-muted)' }}>Coming soon.</p>
+          <Button>Placeholder action</Button>
+        </Stack>
+      </Card>
     </main>
   );
 }

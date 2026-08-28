@@ -1,0 +1,27 @@
+.pf-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.pf-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--pf-font-size-sm);
+}
+
+.pf-table th,
+.pf-table td {
+  padding: var(--pf-space-3) var(--pf-space-4);
+  text-align: left;
+  border-bottom: 1px solid var(--pf-color-border);
+}
+
+.pf-table th {
+  font-weight: var(--pf-font-weight-medium);
+  color: var(--pf-color-text-muted);
+  background: var(--pf-color-surface-sunken);
+}
+
+.pf-table tbody tr:last-child td {
+  border-bottom: none;
+}
