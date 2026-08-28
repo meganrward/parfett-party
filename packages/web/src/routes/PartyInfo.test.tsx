@@ -37,7 +37,6 @@ function renderInfo() {
     >
       <Routes>
         <Route path="/:slug/c/:token/info" element={<PartyInfo />} />
-        <Route path="/christmas/c/JX4KZZ/info" element={<PartyInfo />} />
         <Route path="*" element={<div>ELSEWHERE</div>} />
       </Routes>
     </MemoryRouter>,
@@ -76,6 +75,11 @@ describe('PartyInfo', () => {
     expect(href.origin + href.pathname).toBe('https://calendar.google.com/calendar/render');
     expect(href.searchParams.get('dates')).toBe('20261224T190000Z/20261225T020000Z');
     expect(href.searchParams.get('text')).toBe('Parfett Christmas');
+
+    expect(screen.getByRole('link', { name: /back to the guest list/i })).toHaveAttribute(
+      'href',
+      '/christmas/c/JX4KZZ',
+    );
   });
 
   it('downloads an .ics when the Apple button is clicked', async () => {

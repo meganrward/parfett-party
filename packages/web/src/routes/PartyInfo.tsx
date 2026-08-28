@@ -1,4 +1,4 @@
-import { Navigate, useParams } from 'react-router-dom';
+import { Link, Navigate, useParams } from 'react-router-dom';
 import { Button, Card, Heading, Stack } from '@parfett/design-system';
 import { usePartyInfo } from '../lib/party-info';
 import { qrInfoToCalendarEvent } from '../lib/api-mappers';
@@ -108,6 +108,10 @@ export function PartyInfo() {
       </Card>
 
       <Game />
+
+      <Link className="pf-button pf-button--secondary pf-button--md" to={`/${slug}/c/${token}`}>
+        Back to the guest list
+      </Link>
     </Page>
   );
 }
