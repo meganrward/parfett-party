@@ -59,6 +59,7 @@ import {
   addGuest,
   createParty,
   deleteGuest,
+  getAdmin,
   getPartyBySlug,
   getQr,
   invokeGenerateQrCodes,
@@ -289,6 +290,22 @@ describe('party + guest + admin writes', () => {
       'upsert',
       { user_id: 'u1', display_name: 'Meg', is_super: false },
     ]);
+  });
+
+  it('getAdmin returns the mapped row or null', async () => {
+    state.fromResults = [
+      {
+        data: { user_id: 'u1', display_name: 'Meg', is_super: true, created_at: 't' },
+        error: null,
+      },
+    ];
+    await expect(getAdmin('u1')).resolves.toEqual({
+      userId: 'u1',
+      displayName: 'Meg',
+      isSuper: true,
+    });
+    state.fromResults = [{ data: null, error: null }];
+    await expect(getAdmin('u2')).resolves.toBeNull();
   });
 });
 

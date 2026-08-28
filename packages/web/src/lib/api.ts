@@ -166,6 +166,19 @@ export async function listAdmins(): Promise<AdminRow[]> {
   return (data ?? []).map(mapAdmin);
 }
 
+/** The signed-in user's admin row, or null if they are not an admin. */
+export async function getAdmin(userId: string): Promise<AdminRow | null> {
+  const { data, error } = await supabase
+    .from('admins')
+    .select('*')
+    .eq('user_id', userId)
+    .maybeSingle();
+  if (error) {
+    fail(error.message);
+  }
+  return data ? mapAdmin(data) : null;
+}
+
 export async function upsertAdmin(input: {
   userId: string;
   displayName: string;
