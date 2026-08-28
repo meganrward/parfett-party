@@ -1,6 +1,7 @@
 import { HashRouter, Route, Routes } from 'react-router-dom';
 import { Button, Card, Heading, Stack } from '@parfett/design-system';
 import { GuestFlow } from './routes/GuestFlow';
+import { PartyInfo } from './routes/PartyInfo';
 
 function Placeholder({ title }: { title: string }) {
   return (
@@ -22,7 +23,7 @@ export function App() {
       <Routes>
         <Route path="/" element={<Placeholder title="Parfett Party" />} />
         <Route path="/:slug/c/:token" element={<GuestFlow />} />
-        <Route path="/:slug/c/:token/info" element={<Placeholder title="Party details" />} />
+        <Route path="/:slug/c/:token/info" element={<PartyInfo />} />
         <Route path="/admin/*" element={<Placeholder title="Admin" />} />
         <Route path="*" element={<Placeholder title="Not found" />} />
       </Routes>
