@@ -18,6 +18,12 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./vitest.setup.ts'],
     include: ['packages/*/src/**/*.{test,spec}.{ts,tsx}'],
+    // Dummy Supabase env so lib/supabase.ts can construct a client at import
+    // time. Tests never hit the network — they mock ./supabase or ./api.
+    env: {
+      VITE_SUPABASE_URL: 'http://localhost:54321',
+      VITE_SUPABASE_ANON_KEY: 'test-anon-key',
+    },
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html'],

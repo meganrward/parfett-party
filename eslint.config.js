@@ -61,6 +61,9 @@ export default tseslint.config(
       ...reactHooks.configs.recommended.rules,
       ...conventions.rules,
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      // `void promise` is our chosen way to fire-and-forget in event handlers
+      // (async/await is the rule elsewhere; .then/.catch are banned).
+      'sonarjs/void-use': 'off',
     },
   },
   // Config files, Vite/Vitest configs and Storybook stories are allowed default exports.

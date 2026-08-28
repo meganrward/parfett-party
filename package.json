@@ -25,7 +25,8 @@
     "functions:check": "deno check supabase/functions/generate-qr-codes/index.ts",
     "functions:serve": "supabase functions serve",
     "functions:deploy": "supabase functions deploy generate-qr-codes",
-    "bootstrap:super-admin": "tsx --env-file-if-exists=supabase/scripts/.env supabase/scripts/bootstrap-super-admin.ts"
+    "bootstrap:super-admin": "tsx --env-file-if-exists=supabase/scripts/.env supabase/scripts/bootstrap-super-admin.ts",
+    "seed:test-party": "tsx --env-file-if-exists=supabase/scripts/.env supabase/scripts/seed-test-party.ts"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
