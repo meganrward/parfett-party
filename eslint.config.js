@@ -75,7 +75,16 @@ export default tseslint.config(
       '**/*.stories.{ts,tsx}',
       '**/.storybook/**',
     ],
-    rules: { 'import/no-default-export': 'off' },
+    rules: {
+      'import/no-default-export': 'off',
+      // the rule name itself contains "password" and trips this config file
+      'sonarjs/no-hardcoded-passwords': 'off',
+    },
+  },
+  // Fake credentials in test fixtures are expected.
+  {
+    files: ['**/*.{test,spec}.{ts,tsx}'],
+    rules: { 'sonarjs/no-hardcoded-passwords': 'off' },
   },
   prettier,
 );

@@ -1,7 +1,10 @@
 import { HashRouter, Route, Routes } from 'react-router-dom';
-import { Button, Card, Heading, Stack } from '@parfett/design-system';
+import { Card, Heading, Stack } from '@parfett/design-system';
 import { GuestFlow } from './routes/GuestFlow';
 import { PartyInfo } from './routes/PartyInfo';
+import { AdminLayout } from './routes/admin/AdminLayout';
+import { PartyPicker } from './routes/admin/PartyPicker';
+import { RequirePartyAccess, RequireSuper } from './routes/admin/guards';
 
 function Placeholder({ title }: { title: string }) {
   return (
@@ -10,7 +13,6 @@ function Placeholder({ title }: { title: string }) {
         <Stack gap={4}>
           <Heading level={1}>{title}</Heading>
           <p style={{ margin: 0, color: 'var(--pf-color-text-muted)' }}>Coming soon.</p>
-          <Button>Placeholder action</Button>
         </Stack>
       </Card>
     </main>
@@ -24,7 +26,19 @@ export function App() {
         <Route path="/" element={<Placeholder title="Parfett Party" />} />
         <Route path="/:slug/c/:token" element={<GuestFlow />} />
         <Route path="/:slug/c/:token/info" element={<PartyInfo />} />
-        <Route path="/admin/*" element={<Placeholder title="Admin" />} />
+
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<PartyPicker />} />
+          <Route element={<RequirePartyAccess />}>
+            <Route path=":slug/guests" element={<Placeholder title="Guests" />} />
+            <Route path=":slug/codes" element={<Placeholder title="Code sheet" />} />
+          </Route>
+          <Route element={<RequireSuper />}>
+            <Route path="parties" element={<Placeholder title="Manage parties" />} />
+            <Route path="admins" element={<Placeholder title="Manage admins" />} />
+          </Route>
+        </Route>
+
         <Route path="*" element={<Placeholder title="Not found" />} />
       </Routes>
     </HashRouter>
