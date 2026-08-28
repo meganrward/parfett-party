@@ -5,6 +5,7 @@ import { PartyInfo } from './routes/PartyInfo';
 import { AdminLayout } from './routes/admin/AdminLayout';
 import { PartyPicker } from './routes/admin/PartyPicker';
 import { Guests } from './routes/admin/Guests';
+import { CodeSheet } from './routes/admin/CodeSheet';
 import { RequirePartyAccess, RequireSuper } from './routes/admin/guards';
 
 function Placeholder({ title }: { title: string }) {
@@ -32,7 +33,7 @@ export function App() {
           <Route index element={<PartyPicker />} />
           <Route element={<RequirePartyAccess />}>
             <Route path=":slug/guests" element={<Guests />} />
-            <Route path=":slug/codes" element={<Placeholder title="Code sheet" />} />
+            <Route path=":slug/codes" element={<CodeSheet />} />
           </Route>
           <Route element={<RequireSuper />}>
             <Route path="parties" element={<Placeholder title="Manage parties" />} />

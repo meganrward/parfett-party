@@ -1,0 +1,124 @@
+.pf-code-sheet {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: var(--pf-space-5);
+}
+
+.pf-code-sheet__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--pf-space-4);
+  margin-bottom: var(--pf-space-5);
+}
+
+.pf-code-sheet__setup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--pf-space-6);
+  padding: var(--pf-space-4);
+  margin-bottom: var(--pf-space-5);
+  border: 1px solid var(--pf-color-border);
+  border-radius: var(--pf-radius-md);
+}
+
+/* Plain QR grid */
+.pf-code-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--pf-space-4);
+}
+
+.pf-code-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--pf-space-2);
+  padding: var(--pf-space-3);
+  border: 1px solid var(--pf-color-border);
+  border-radius: var(--pf-radius-md);
+  text-align: center;
+  break-inside: avoid;
+}
+
+.pf-code-card code {
+  font-size: var(--pf-font-size-sm);
+  letter-spacing: 0.04em;
+}
+
+/* Business-card grid */
+.pf-bcard-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6mm;
+}
+
+.pf-bcard {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--pf-color-border);
+  break-inside: avoid;
+}
+
+.pf-bcard__art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pf-bcard__qr {
+  position: absolute;
+  height: auto;
+}
+
+/* Drag-to-place editor */
+.pf-placement-frame {
+  touch-action: none;
+  user-select: none;
+}
+
+.pf-placement-qr {
+  position: absolute;
+  touch-action: none;
+  cursor: grab;
+  outline: 2px dashed var(--pf-color-brand);
+  outline-offset: 1px;
+}
+
+.pf-placement-qr:active {
+  cursor: grabbing;
+}
+
+.pf-placement-handle {
+  position: absolute;
+  right: -8px;
+  bottom: -8px;
+  width: 16px;
+  height: 16px;
+  background: var(--pf-color-brand);
+  border: 2px solid #fff;
+  border-radius: 50%;
+  cursor: nwse-resize;
+  touch-action: none;
+}
+
+@page {
+  margin: 12mm;
+}
+
+@media print {
+  .pf-no-print {
+    display: none !important;
+  }
+  .pf-code-sheet {
+    padding: 0;
+  }
+  .pf-code-card {
+    border-color: #000;
+  }
+  .pf-bcard {
+    border-color: #ccc;
+  }
+}

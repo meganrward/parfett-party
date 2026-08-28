@@ -17,12 +17,7 @@ const guest = (
   status: 'going' | 'not_going' | null,
   name: string | null,
   ts: string,
-) => ({
-  id,
-  name,
-  rsvpStatus: status,
-  createdAt: ts,
-});
+) => ({ id, name, rsvpStatus: status, createdAt: ts });
 
 const codes: QrCodeWithGuests[] = [
   {
@@ -92,9 +87,9 @@ describe('Guests', () => {
     renderGuests();
     expect(screen.getByRole('heading', { name: 'Parfett Christmas' })).toBeInTheDocument();
 
-    expect(screen.getByLabelText(/name for ellie/i)).toHaveValue('Ellie');
-    expect(screen.getByLabelText(/name for sam/i)).toHaveValue('Sam');
-    expect(screen.getByLabelText(/name for bob/i)).toHaveValue('Bob');
+    expect(screen.getByDisplayValue('Ellie')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('Sam')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('Bob')).toBeInTheDocument();
 
     // Ellie + Sam are on JAAA (prefix J), Bob on KBBB
     expect(screen.getAllByText('JAAA')).toHaveLength(2);
@@ -108,17 +103,17 @@ describe('Guests', () => {
     vi.mocked(useAdminParty).mockReturnValue(makeState());
     renderGuests();
     await userEvent.selectOptions(screen.getByLabelText('Response'), 'awaiting');
-    expect(screen.getByLabelText(/name for sam/i)).toBeInTheDocument();
-    expect(screen.queryByLabelText(/name for ellie/i)).not.toBeInTheDocument();
-    expect(screen.queryByLabelText(/name for bob/i)).not.toBeInTheDocument();
+    expect(screen.getByDisplayValue('Sam')).toBeInTheDocument();
+    expect(screen.queryByDisplayValue('Ellie')).not.toBeInTheDocument();
+    expect(screen.queryByDisplayValue('Bob')).not.toBeInTheDocument();
   });
 
   it('filters by token search', async () => {
     vi.mocked(useAdminParty).mockReturnValue(makeState());
     renderGuests();
     await userEvent.type(screen.getByLabelText('Search token'), 'kb');
-    expect(screen.getByLabelText(/name for bob/i)).toBeInTheDocument();
-    expect(screen.queryByLabelText(/name for ellie/i)).not.toBeInTheDocument();
+    expect(screen.getByDisplayValue('Bob')).toBeInTheDocument();
+    expect(screen.queryByDisplayValue('Ellie')).not.toBeInTheDocument();
   });
 
   it('edits and removes a guest', async () => {
@@ -126,7 +121,7 @@ describe('Guests', () => {
     vi.mocked(useAdminParty).mockReturnValue(state);
     renderGuests();
 
-    const bobRow = screen.getByLabelText(/name for bob/i).closest('tr')!;
+    const bobRow = screen.getByDisplayValue('Bob').closest('tr')!;
     await userEvent.click(within(bobRow).getByRole('radio', { name: 'Going' }));
     expect(state.editGuest).toHaveBeenCalledWith('g3', { name: 'Bob', status: 'going' });
 

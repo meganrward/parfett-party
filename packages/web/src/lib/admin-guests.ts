@@ -36,6 +36,25 @@ export function sortedPrefixes(codes: readonly QrCodeWithGuests[]): string[] {
   return [...set].sort();
 }
 
+/** Codes with no guests yet — the ones still worth handing out. */
+export function onlyUnusedCodes(codes: readonly QrCodeWithGuests[]): QrCodeWithGuests[] {
+  return codes.filter((c) => c.guests.length === 0);
+}
+
+/** Group codes by prefix (in prefix order); the "" key holds prefix-less codes. */
+export function groupCodesByPrefix(
+  codes: readonly QrCodeWithGuests[],
+): Array<{ prefix: string; codes: QrCodeWithGuests[] }> {
+  const groups = new Map<string, QrCodeWithGuests[]>();
+  for (const code of codes) {
+    const key = code.prefix ?? '';
+    const list = groups.get(key) ?? [];
+    list.push(code);
+    groups.set(key, list);
+  }
+  return [...groups.keys()].sort().map((prefix) => ({ prefix, codes: groups.get(prefix)! }));
+}
+
 /** Explode the codes into guest entries, oldest guest first, grouped by code order. */
 export function flattenGuestEntries(codes: readonly QrCodeWithGuests[]): GuestEntry[] {
   return codes.flatMap((code) =>

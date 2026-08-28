@@ -5,6 +5,8 @@ import {
   EMPTY_FILTERS,
   filterGuestEntries,
   flattenGuestEntries,
+  groupCodesByPrefix,
+  onlyUnusedCodes,
   sortedPrefixes,
   summariseByPrefix,
   summariseCodes,
@@ -88,6 +90,27 @@ describe('filterGuestEntries', () => {
     expect(filterGuestEntries(entries, { prefix: 'J', status: 'not_going', query: '' })).toEqual(
       [],
     );
+  });
+});
+
+describe('onlyUnusedCodes', () => {
+  it('keeps codes with zero guests', () => {
+    expect(onlyUnusedCodes(sample).map((c) => c.token)).toEqual(['KDDD']);
+  });
+});
+
+describe('groupCodesByPrefix', () => {
+  it('groups by prefix in order', () => {
+    const groups = groupCodesByPrefix(sample);
+    expect(groups.map((g) => g.prefix)).toEqual(['J', 'K']);
+    expect(groups[0]!.codes.map((c) => c.token)).toEqual(['JAAA', 'JBBB']);
+    expect(groups[1]!.codes.map((c) => c.token)).toEqual(['KCCC', 'KDDD']);
+  });
+
+  it('puts prefix-less codes under the "" key', () => {
+    expect(groupCodesByPrefix([code({ token: 'ZZZ', prefix: null })])).toEqual([
+      { prefix: '', codes: [expect.objectContaining({ token: 'ZZZ' })] },
+    ]);
   });
 });
 

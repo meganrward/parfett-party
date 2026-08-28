@@ -87,7 +87,7 @@ function GuestEntryRow({
     <tr>
       <td>
         <TextInput
-          label={`Name for ${guestDisplayName(guest)}`}
+          label={null}
           value={name}
           onChange={(e) => setName(e.target.value)}
           onBlur={commitName}
