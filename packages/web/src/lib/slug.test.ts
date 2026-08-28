@@ -56,4 +56,15 @@ describe('canonicalRedirectPath', () => {
   it('stays put when the canonical slug is unknown (bad token)', () => {
     expect(canonicalRedirectPath({ urlSlug: 'xmas', canonicalSlug: '', token: 'JX4K' })).toBeNull();
   });
+
+  it('appends a suffix to the canonical path', () => {
+    expect(
+      canonicalRedirectPath({
+        urlSlug: 'xmas',
+        canonicalSlug: 'christmas',
+        token: 'JX4K',
+        suffix: '/info',
+      }),
+    ).toBe('/christmas/c/JX4K/info');
+  });
 });

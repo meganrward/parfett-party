@@ -23,6 +23,7 @@ export default defineConfig({
     env: {
       VITE_SUPABASE_URL: 'http://localhost:54321',
       VITE_SUPABASE_ANON_KEY: 'test-anon-key',
+      TZ: 'UTC',
     },
     coverage: {
       provider: 'v8',

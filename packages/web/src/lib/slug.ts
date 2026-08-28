@@ -25,15 +25,17 @@ export function isValidSlug(slug: string): boolean {
 /**
  * Guest-flow canonicalisation: given the slug in the URL and the canonical slug
  * the token actually belongs to, return the path to redirect to, or null to stay.
+ * `suffix` (e.g. "/info") is appended to the canonical path.
  */
 export function canonicalRedirectPath(args: {
   urlSlug: string;
   canonicalSlug: string;
   token: string;
+  suffix?: string;
 }): string | null {
-  const { urlSlug, canonicalSlug, token } = args;
+  const { urlSlug, canonicalSlug, token, suffix = '' } = args;
   if (!canonicalSlug || urlSlug === canonicalSlug) {
     return null;
   }
-  return `/${canonicalSlug}/c/${token}`;
+  return `/${canonicalSlug}/c/${token}${suffix}`;
 }

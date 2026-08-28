@@ -1,4 +1,5 @@
 import type { Database } from './database.types';
+import type { CalendarEvent } from './calendar';
 import type { Guest, RsvpStatus } from './guests';
 import type { AdminRow, Party, PartyInput, QrCodeWithGuests, QrInfo } from './api-types';
 
@@ -52,6 +53,17 @@ export function mapQrInfo(row: GetQrRowish): QrInfo {
     location: row.location ?? null,
     description: row.description ?? null,
     guestCount: row.guest_count ?? 0,
+  };
+}
+
+/** Shape QrInfo for the calendar helpers. */
+export function qrInfoToCalendarEvent(info: QrInfo): CalendarEvent {
+  return {
+    name: info.partyName,
+    description: info.description,
+    location: info.location,
+    eventStart: info.eventStart,
+    eventEnd: info.eventEnd,
   };
 }
 

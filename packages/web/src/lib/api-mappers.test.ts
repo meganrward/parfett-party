@@ -6,6 +6,7 @@ import {
   mapQrCodeWithGuests,
   mapQrInfo,
   partyInputToRow,
+  qrInfoToCalendarEvent,
   toRsvpStatus,
 } from './api-mappers';
 
@@ -74,6 +75,28 @@ const partyRow = {
   alphabet: 'ABCDEFGHJKLMNPQRTUVWXYZ23456789',
   created_at: '2026-01-01T00:00:00Z',
 };
+
+describe('qrInfoToCalendarEvent', () => {
+  it('renames partyName -> name and carries the event fields', () => {
+    expect(
+      qrInfoToCalendarEvent({
+        slug: 'christmas',
+        partyName: 'Parfett Christmas',
+        eventStart: '2026-12-24T19:00:00Z',
+        eventEnd: null,
+        location: 'Home',
+        description: 'BYOB',
+        guestCount: 3,
+      }),
+    ).toEqual({
+      name: 'Parfett Christmas',
+      description: 'BYOB',
+      location: 'Home',
+      eventStart: '2026-12-24T19:00:00Z',
+      eventEnd: null,
+    });
+  });
+});
 
 describe('mapParty', () => {
   it('camelCases every column and defaults prefixes', () => {

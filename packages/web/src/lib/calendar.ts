@@ -123,6 +123,40 @@ export function icsDownloadFilename(event: Pick<CalendarEvent, 'name'>): string 
   return `${slugishName(event.name)}.ics`;
 }
 
+// Pinned so the output is stable regardless of the viewer's locale. The party is
+// in London; en-GB gives "Fri, 11 Sept 2026, 19:00".
+const WHEN_LOCALE = 'en-GB';
+const DATE_FMT: Intl.DateTimeFormatOptions = {
+  weekday: 'short',
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+};
+const TIME_FMT: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit' };
+
+function dateTime(d: Date): string {
+  return `${d.toLocaleDateString(WHEN_LOCALE, DATE_FMT)}, ${d.toLocaleTimeString(WHEN_LOCALE, TIME_FMT)}`;
+}
+
+/** Human "when" line for the party-info page, or null if there's no start time. */
+export function formatEventWhen(
+  event: Pick<CalendarEvent, 'eventStart' | 'eventEnd'>,
+): string | null {
+  if (!event.eventStart || Number.isNaN(Date.parse(event.eventStart))) {
+    return null;
+  }
+  const start = new Date(event.eventStart);
+  if (!event.eventEnd || Number.isNaN(Date.parse(event.eventEnd))) {
+    return dateTime(start);
+  }
+  const end = new Date(event.eventEnd);
+  const endText =
+    start.toDateString() === end.toDateString()
+      ? end.toLocaleTimeString(WHEN_LOCALE, TIME_FMT)
+      : dateTime(end);
+  return `${dateTime(start)} – ${endText}`;
+}
+
 /** Thin DOM wrapper; the string builder above is what tests exercise. */
 export function icsBlob(event: CalendarEvent): Blob | null {
   const content = icsContent(event);

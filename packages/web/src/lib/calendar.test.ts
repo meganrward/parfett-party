@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   escapeICSText,
   foldICSLine,
+  formatEventWhen,
   googleCalendarUrl,
   hasCalendarInfo,
   icsContent,
@@ -102,5 +103,36 @@ describe('icsDownloadFilename', () => {
   it('slugifies the name', () => {
     expect(icsDownloadFilename({ name: 'Parfett Christmas!' })).toBe('parfett-christmas.ics');
     expect(icsDownloadFilename({ name: '///' })).toBe('event.ics');
+  });
+});
+
+describe('formatEventWhen', () => {
+  // The suite runs with TZ=UTC (vitest.config.ts). Make that assumption explicit.
+  it('assumes a UTC test timezone', () => {
+    expect(new Date('2026-09-11T19:00:00Z').getUTCHours()).toBe(19);
+    expect(new Date('2026-09-11T19:00:00Z').getHours()).toBe(19);
+  });
+
+  it('is null without a start', () => {
+    expect(formatEventWhen({ eventStart: null, eventEnd: null })).toBeNull();
+    expect(formatEventWhen({ eventStart: 'nope', eventEnd: null })).toBeNull();
+  });
+
+  it('formats a start-only event (en-GB, 24h)', () => {
+    expect(formatEventWhen({ eventStart: '2026-09-11T19:00:00Z', eventEnd: null })).toBe(
+      'Fri, 11 Sept 2026, 19:00',
+    );
+  });
+
+  it('shows just the end time when the event ends the same day', () => {
+    expect(
+      formatEventWhen({ eventStart: '2026-09-11T19:00:00Z', eventEnd: '2026-09-11T23:30:00Z' }),
+    ).toBe('Fri, 11 Sept 2026, 19:00 – 23:30');
+  });
+
+  it('shows the full end date when the event crosses midnight', () => {
+    expect(
+      formatEventWhen({ eventStart: '2026-09-11T19:00:00Z', eventEnd: '2026-09-12T02:00:00Z' }),
+    ).toBe('Fri, 11 Sept 2026, 19:00 – Sat, 12 Sept 2026, 02:00');
   });
 });
