@@ -31,6 +31,7 @@ export default tseslint.config(
       '**/coverage/**',
       '**/storybook-static/**',
       '**/node_modules/**',
+      '**/.vite/**',
       // Deno runtime — type-checked with `deno check`, tested with `deno test`.
       'supabase/functions/**',
     ],
