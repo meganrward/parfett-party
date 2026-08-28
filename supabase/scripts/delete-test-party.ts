@@ -8,7 +8,7 @@
  */
 import { createClient } from '@supabase/supabase-js';
 
-const SLUG = process.env.TEST_PARTY_SLUG ?? 'test-bash';
+const SLUG = process.env.TEST_PARTY_SLUG ?? 'test-party';
 
 function required(name: string): string {
   const value = process.env[name];

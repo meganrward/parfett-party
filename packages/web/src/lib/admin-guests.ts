@@ -1,22 +1,30 @@
 import { useCallback, useEffect, useState } from 'react';
 import * as api from './api';
 import type { GuestPatch, Party, QrCodeWithGuests } from './api-types';
-import type { RsvpStatus } from './guests';
+import { sortGuests, type Guest, type RsvpStatus } from './guests';
 
 // ---------------------------------------------------------------------------
-// Pure filtering + summary logic
+// Pure: flatten to one entry per guest response, then filter / summarise
 // ---------------------------------------------------------------------------
 
-/** 'none' = codes with no guests at all. */
-export type StatusFilter = 'all' | RsvpStatus | 'none';
+/** 'awaiting' = guest with no response yet. */
+export type StatusFilter = 'all' | RsvpStatus | 'awaiting';
 
-export interface CodeFilters {
+export interface GuestFilters {
   prefix: string; // '' = any
   status: StatusFilter;
   query: string; // token substring, case-insensitive
 }
 
-export const EMPTY_FILTERS: CodeFilters = { prefix: '', status: 'all', query: '' };
+export const EMPTY_FILTERS: GuestFilters = { prefix: '', status: 'all', query: '' };
+
+/** One row of the guests table: a single guest plus the card they're on. */
+export interface GuestEntry {
+  guest: Guest;
+  codeId: string;
+  token: string;
+  prefix: string | null;
+}
 
 export function sortedPrefixes(codes: readonly QrCodeWithGuests[]): string[] {
   const set = new Set<string>();
@@ -28,26 +36,38 @@ export function sortedPrefixes(codes: readonly QrCodeWithGuests[]): string[] {
   return [...set].sort();
 }
 
-function codeMatchesStatus(code: QrCodeWithGuests, status: StatusFilter): boolean {
+/** Explode the codes into guest entries, oldest guest first, grouped by code order. */
+export function flattenGuestEntries(codes: readonly QrCodeWithGuests[]): GuestEntry[] {
+  return codes.flatMap((code) =>
+    sortGuests(code.guests).map((guest) => ({
+      guest,
+      codeId: code.id,
+      token: code.token,
+      prefix: code.prefix,
+    })),
+  );
+}
+
+function entryMatchesStatus(entry: GuestEntry, status: StatusFilter): boolean {
   if (status === 'all') {
     return true;
   }
-  if (status === 'none') {
-    return code.guests.length === 0;
+  if (status === 'awaiting') {
+    return entry.guest.rsvpStatus === null;
   }
-  return code.guests.some((g) => g.rsvpStatus === status);
+  return entry.guest.rsvpStatus === status;
 }
 
-export function filterCodes(
-  codes: readonly QrCodeWithGuests[],
-  filters: CodeFilters,
-): QrCodeWithGuests[] {
+export function filterGuestEntries(
+  entries: readonly GuestEntry[],
+  filters: GuestFilters,
+): GuestEntry[] {
   const query = filters.query.trim().toLowerCase();
-  return codes.filter(
-    (code) =>
-      (!filters.prefix || code.prefix === filters.prefix) &&
-      codeMatchesStatus(code, filters.status) &&
-      (!query || code.token.toLowerCase().includes(query)),
+  return entries.filter(
+    (entry) =>
+      (!filters.prefix || entry.prefix === filters.prefix) &&
+      entryMatchesStatus(entry, filters.status) &&
+      (!query || entry.token.toLowerCase().includes(query)),
   );
 }
 

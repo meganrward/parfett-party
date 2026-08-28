@@ -12,7 +12,7 @@
  *   npm run seed:test-party
  *
  * Options (env vars):
- *   TEST_PARTY_SLUG   default "test-bash"
+ *   TEST_PARTY_SLUG   default "test-party"
  *   APP_BASE_URL      default "http://localhost:5273/parfett-party"
  *   RESEED=1          wipe and regenerate the codes (URLs change)
  *
@@ -22,7 +22,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { DEFAULT_ALPHABET, planTokens } from '../functions/generate-qr-codes/codegen.ts';
 
-const SLUG = process.env.TEST_PARTY_SLUG ?? 'test-bash';
+const SLUG = process.env.TEST_PARTY_SLUG ?? 'test-party';
 const APP_BASE_URL = process.env.APP_BASE_URL ?? 'http://localhost:5273/parfett-party';
 const PREFIXES = ['A', 'B'];
 const COUNT = 6;
@@ -49,10 +49,10 @@ async function main(): Promise<void> {
     .upsert(
       {
         slug: SLUG,
-        name: 'Test Bash',
+        name: 'Test Party',
         event_start: start.toISOString(),
         event_end: end.toISOString(),
-        location: '12 Parfett Street, London E1',
+        location: '19 Parfett Street, London E1',
         description: 'A seeded party for local testing. BYOB; dress code: whatever.',
         qr_count: COUNT,
         prefixes: PREFIXES,
@@ -107,7 +107,6 @@ async function main(): Promise<void> {
     await db.from('guests').insert({
       qr_code_id: withGuests.id,
       party_id: party.id,
-      name: 'Existing Ellie',
       rsvp_status: 'going',
     });
   }

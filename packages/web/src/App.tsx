@@ -4,6 +4,7 @@ import { GuestFlow } from './routes/GuestFlow';
 import { PartyInfo } from './routes/PartyInfo';
 import { AdminLayout } from './routes/admin/AdminLayout';
 import { PartyPicker } from './routes/admin/PartyPicker';
+import { Guests } from './routes/admin/Guests';
 import { RequirePartyAccess, RequireSuper } from './routes/admin/guards';
 
 function Placeholder({ title }: { title: string }) {
@@ -30,7 +31,7 @@ export function App() {
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<PartyPicker />} />
           <Route element={<RequirePartyAccess />}>
-            <Route path=":slug/guests" element={<Placeholder title="Guests" />} />
+            <Route path=":slug/guests" element={<Guests />} />
             <Route path=":slug/codes" element={<Placeholder title="Code sheet" />} />
           </Route>
           <Route element={<RequireSuper />}>

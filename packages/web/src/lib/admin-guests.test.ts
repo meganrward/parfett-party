@@ -3,7 +3,8 @@ import { act } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   EMPTY_FILTERS,
-  filterCodes,
+  filterGuestEntries,
+  flattenGuestEntries,
   sortedPrefixes,
   summariseByPrefix,
   summariseCodes,
@@ -45,38 +46,48 @@ describe('sortedPrefixes', () => {
   });
 });
 
-describe('filterCodes', () => {
+describe('flattenGuestEntries', () => {
+  it('produces one entry per guest, carrying the code token + prefix', () => {
+    const entries = flattenGuestEntries(sample);
+    expect(entries).toHaveLength(4);
+    expect(entries.map((e) => e.token)).toEqual(['JAAA', 'JAAA', 'JBBB', 'KCCC']);
+    expect(entries[0]).toMatchObject({ token: 'JAAA', prefix: 'J' });
+    expect(entries[0]!.guest.rsvpStatus).toBe('going');
+  });
+});
+
+describe('filterGuestEntries', () => {
+  const entries = flattenGuestEntries(sample);
+
   it('passes everything with empty filters', () => {
-    expect(filterCodes(sample, EMPTY_FILTERS)).toHaveLength(4);
+    expect(filterGuestEntries(entries, EMPTY_FILTERS)).toHaveLength(4);
   });
 
   it('filters by prefix', () => {
-    expect(filterCodes(sample, { ...EMPTY_FILTERS, prefix: 'K' }).map((c) => c.token)).toEqual([
-      'KCCC',
-      'KDDD',
-    ]);
+    expect(
+      filterGuestEntries(entries, { ...EMPTY_FILTERS, prefix: 'K' }).map((e) => e.token),
+    ).toEqual(['KCCC']);
   });
 
-  it('status "going" keeps codes with a going guest', () => {
-    expect(filterCodes(sample, { ...EMPTY_FILTERS, status: 'going' }).map((c) => c.token)).toEqual([
-      'JAAA',
-    ]);
-  });
-
-  it('status "none" keeps only guest-less codes', () => {
-    expect(filterCodes(sample, { ...EMPTY_FILTERS, status: 'none' }).map((c) => c.token)).toEqual([
-      'KDDD',
-    ]);
+  it('filters by response status', () => {
+    expect(
+      filterGuestEntries(entries, { ...EMPTY_FILTERS, status: 'going' }).map((e) => e.token),
+    ).toEqual(['JAAA', 'JAAA']);
+    expect(
+      filterGuestEntries(entries, { ...EMPTY_FILTERS, status: 'awaiting' }).map((e) => e.token),
+    ).toEqual(['JBBB']);
   });
 
   it('search matches the token case-insensitively', () => {
-    expect(filterCodes(sample, { ...EMPTY_FILTERS, query: 'kc' }).map((c) => c.token)).toEqual([
-      'KCCC',
-    ]);
+    expect(
+      filterGuestEntries(entries, { ...EMPTY_FILTERS, query: 'kc' }).map((e) => e.token),
+    ).toEqual(['KCCC']);
   });
 
   it('combines filters', () => {
-    expect(filterCodes(sample, { prefix: 'J', status: 'none', query: '' })).toEqual([]);
+    expect(filterGuestEntries(entries, { prefix: 'J', status: 'not_going', query: '' })).toEqual(
+      [],
+    );
   });
 });
 
