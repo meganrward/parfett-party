@@ -1,0 +1,45 @@
+.pf-segmented {
+  display: inline-flex;
+  padding: var(--pf-space-1);
+  gap: var(--pf-space-1);
+  background: var(--pf-color-surface-sunken);
+  border-radius: var(--pf-radius-md);
+}
+
+.pf-segmented__option {
+  position: relative;
+  display: inline-flex;
+}
+
+.pf-segmented__option input {
+  position: absolute;
+  opacity: 0;
+  inset: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+.pf-segmented__label {
+  padding: var(--pf-space-2) var(--pf-space-4);
+  border-radius: var(--pf-radius-sm);
+  font-size: var(--pf-font-size-sm);
+  font-weight: var(--pf-font-weight-medium);
+  color: var(--pf-color-text-muted);
+  user-select: none;
+}
+
+.pf-segmented__option input:checked + .pf-segmented__label {
+  background: var(--pf-color-surface);
+  color: var(--pf-color-text);
+  box-shadow: var(--pf-shadow-sm);
+}
+
+.pf-segmented__option input:focus-visible + .pf-segmented__label {
+  outline: 2px solid var(--pf-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.pf-segmented__option input:disabled + .pf-segmented__label {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
