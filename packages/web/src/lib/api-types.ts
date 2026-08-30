@@ -39,10 +39,10 @@ export interface PartyInput {
   alphabet?: string;
 }
 
-export interface AdminRow {
+export interface HostRow {
   userId: string;
-  displayName: string;
-  isSuper: boolean;
+  name: string;
+  isAdmin: boolean;
 }
 
 export interface QrCodeWithGuests {

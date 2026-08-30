@@ -20,8 +20,8 @@ function required(name: string): string {
 const url = required('SUPABASE_URL');
 const serviceKey = required('SUPABASE_SERVICE_ROLE_KEY');
 const anonKey = required('SUPABASE_ANON_KEY');
-const email = process.env.SUPER_ADMIN_EMAIL ?? 'setup@parfett.party';
-const password = process.env.SUPER_ADMIN_PASSWORD ?? 'local-dev-passphrase-123';
+const email = process.env.ADMIN_EMAIL ?? 'setup@parfett.party';
+const password = process.env.ADMIN_PASSWORD ?? 'local-dev-passphrase-123';
 const fnUrl = `${url}/functions/v1/generate-qr-codes`;
 
 const admin = createClient(url, serviceKey, { auth: { persistSession: false } });
@@ -44,8 +44,8 @@ async function ensureSuperAdmin(): Promise<void> {
     user = data.user;
   }
   const { error } = await admin
-    .from('admins')
-    .upsert({ user_id: user.id, display_name: 'Party Setup', is_super: true });
+    .from('hosts')
+    .upsert({ user_id: user.id, name: 'Party Admin', is_admin: true });
   if (error) throw error;
 }
 
@@ -128,10 +128,10 @@ async function run(partyId: string): Promise<void> {
     password: 'housemate-pw-123',
     email_confirm: true,
   });
-  await admin.from('admins').insert({
+  await admin.from('hosts').insert({
     user_id: hUser.user!.id,
-    display_name: 'Housemate',
-    is_super: false,
+    name: 'Test Host',
+    is_admin: false,
   });
   const { data: hSession } = await anon.auth.signInWithPassword({
     email: hEmail,

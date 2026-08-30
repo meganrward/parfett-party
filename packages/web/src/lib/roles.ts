@@ -1,17 +1,17 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from './supabase';
-import { getAdmin, listMyParties } from './api';
-import type { AdminRow, Party } from './api-types';
+import { getHost, listMyParties } from './api';
+import type { HostRow, Party } from './api-types';
 
-export type AdminRoleName = 'super' | 'admin';
+export type AdminRoleName = 'admin' | 'host';
 
-/** Pure: map an admins row to a role name (null = not an admin). */
-export function adminRole(row: AdminRow | null): AdminRoleName | null {
+/** Pure: map a hosts row to a role name (null = not a host/admin at all). */
+export function adminRole(row: HostRow | null): AdminRoleName | null {
   if (!row) {
     return null;
   }
-  return row.isSuper ? 'super' : 'admin';
+  return row.isAdmin ? 'admin' : 'host';
 }
 
 export interface SessionState {
@@ -52,14 +52,14 @@ export function useSession(): SessionState {
 
 export interface AdminRoleState {
   role: AdminRoleName | null;
-  isSuper: boolean;
+  isAdmin: boolean;
   loading: boolean;
 }
 
-/** Resolves the signed-in user's admin role from the admins table. */
+/** Resolves the signed-in user's role from the hosts table ('admin' | 'host' | null). */
 export function useAdminRole(): AdminRoleState {
   const { session, loading: sessionLoading } = useSession();
-  const [row, setRow] = useState<AdminRow | null>(null);
+  const [row, setRow] = useState<HostRow | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -76,9 +76,9 @@ export function useAdminRole(): AdminRoleState {
     setLoading(true);
     const load = async () => {
       try {
-        const admin = await getAdmin(session.user.id);
+        const host = await getHost(session.user.id);
         if (active) {
-          setRow(admin);
+          setRow(host);
         }
       } finally {
         if (active) {
@@ -94,7 +94,7 @@ export function useAdminRole(): AdminRoleState {
   }, [session, sessionLoading]);
 
   const role = adminRole(row);
-  return { role, isSuper: role === 'super', loading: sessionLoading || loading };
+  return { role, isAdmin: role === 'admin', loading: sessionLoading || loading };
 }
 
 export interface MyPartiesState {

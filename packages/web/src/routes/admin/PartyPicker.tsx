@@ -5,14 +5,14 @@ import { useAdminRole, useMyParties } from '../../lib/roles';
 /** /admin index: the parties this admin can open. */
 export function PartyPicker() {
   const { parties, loading, error } = useMyParties();
-  const { isSuper } = useAdminRole();
+  const { isAdmin } = useAdminRole();
 
   return (
     <main style={{ maxWidth: 560, margin: '0 auto', padding: 'var(--pf-space-5)' }}>
       <Stack gap={4}>
         <Stack direction="row" gap={3} align="center" justify="space-between">
           <Heading level={1}>Parties</Heading>
-          {isSuper ? (
+          {isAdmin ? (
             <Link className="pf-button pf-button--secondary pf-button--sm" to="/admin/parties">
               Manage parties
             </Link>
@@ -24,7 +24,7 @@ export function PartyPicker() {
 
         {!loading && !error && parties.length === 0 ? (
           <p style={{ color: 'var(--pf-color-text-muted)' }}>
-            {isSuper
+            {isAdmin
               ? 'No parties yet. Create one from “Manage parties”.'
               : 'You don’t have access to any parties yet.'}
           </p>

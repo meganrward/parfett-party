@@ -1,10 +1,10 @@
 import type { Database } from './database.types';
 import type { CalendarEvent } from './calendar';
 import type { Guest, RsvpStatus } from './guests';
-import type { AdminRow, Party, PartyInput, QrCodeWithGuests, QrInfo } from './api-types';
+import type { HostRow, Party, PartyInput, QrCodeWithGuests, QrInfo } from './api-types';
 
 type PartyRow = Database['public']['Tables']['parties']['Row'];
-type AdminTableRow = Database['public']['Tables']['admins']['Row'];
+type HostTableRow = Database['public']['Tables']['hosts']['Row'];
 type PartyWrite = Database['public']['Tables']['parties']['Insert'];
 
 /**
@@ -84,11 +84,11 @@ export function mapParty(row: PartyRow): Party {
   };
 }
 
-export function mapAdmin(row: AdminTableRow): AdminRow {
+export function mapHost(row: HostTableRow): HostRow {
   return {
     userId: row.user_id,
-    displayName: row.display_name,
-    isSuper: row.is_super,
+    name: row.name,
+    isAdmin: row.is_admin,
   };
 }
 

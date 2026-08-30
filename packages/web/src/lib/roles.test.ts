@@ -22,9 +22,9 @@ const { auth, mockSupabase } = vi.hoisted(() => {
 });
 
 vi.mock('./supabase', () => ({ supabase: mockSupabase }));
-vi.mock('./api', () => ({ getAdmin: vi.fn(), listMyParties: vi.fn() }));
+vi.mock('./api', () => ({ getHost: vi.fn(), listMyParties: vi.fn() }));
 
-import { getAdmin, listMyParties } from './api';
+import { getHost, listMyParties } from './api';
 import { adminRole, useAdminRole, useMyParties, useSession } from './roles';
 
 const sessionFor = (id: string) => ({ user: { id } });
@@ -36,10 +36,10 @@ beforeEach(() => {
 });
 
 describe('adminRole', () => {
-  it('maps a row to super / admin, and null to null', () => {
+  it('maps a row to admin / host, and null to null', () => {
     expect(adminRole(null)).toBeNull();
-    expect(adminRole({ userId: 'u', displayName: 'x', isSuper: true })).toBe('super');
-    expect(adminRole({ userId: 'u', displayName: 'x', isSuper: false })).toBe('admin');
+    expect(adminRole({ userId: 'u', name: 'x', isAdmin: true })).toBe('admin');
+    expect(adminRole({ userId: 'u', name: 'x', isAdmin: false })).toBe('host');
   });
 });
 
@@ -64,30 +64,31 @@ describe('useAdminRole', () => {
     const { result } = renderHook(() => useAdminRole());
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.role).toBeNull();
-    expect(result.current.isSuper).toBe(false);
-    expect(getAdmin).not.toHaveBeenCalled();
+    expect(result.current.isAdmin).toBe(false);
+    expect(getHost).not.toHaveBeenCalled();
   });
 
-  it('resolves super for an is_super row', async () => {
+  it('resolves admin for an is_admin row', async () => {
     auth.session = sessionFor('u1');
-    vi.mocked(getAdmin).mockResolvedValue({ userId: 'u1', displayName: 'Meg', isSuper: true });
+    vi.mocked(getHost).mockResolvedValue({ userId: 'u1', name: 'Meg', isAdmin: true });
 
     const { result } = renderHook(() => useAdminRole());
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    expect(getAdmin).toHaveBeenCalledWith('u1');
-    expect(result.current.role).toBe('super');
-    expect(result.current.isSuper).toBe(true);
+    expect(getHost).toHaveBeenCalledWith('u1');
+    expect(result.current.role).toBe('admin');
+    expect(result.current.isAdmin).toBe(true);
   });
 
-  it('resolves admin for a non-super row and null for no row', async () => {
+  it('resolves host for a non-admin row and null for no row', async () => {
     auth.session = sessionFor('u2');
-    vi.mocked(getAdmin).mockResolvedValueOnce({ userId: 'u2', displayName: 'H', isSuper: false });
+    vi.mocked(getHost).mockResolvedValueOnce({ userId: 'u2', name: 'H', isAdmin: false });
     const first = renderHook(() => useAdminRole());
     await waitFor(() => expect(first.result.current.loading).toBe(false));
-    expect(first.result.current.role).toBe('admin');
+    expect(first.result.current.role).toBe('host');
+    expect(first.result.current.isAdmin).toBe(false);
 
-    vi.mocked(getAdmin).mockResolvedValueOnce(null);
+    vi.mocked(getHost).mockResolvedValueOnce(null);
     const second = renderHook(() => useAdminRole());
     await waitFor(() => expect(second.result.current.loading).toBe(false));
     expect(second.result.current.role).toBeNull();

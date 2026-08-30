@@ -1,16 +1,17 @@
 /**
- * One-off: create the shared super-admin account and its admins row.
+ * One-off: create the shared admin account and its `hosts` row (is_admin = true).
  *
- * The first super-admin cannot be made through the app (that needs a super-admin),
- * so seed it here with the service-role key.
+ * The first admin can't be made through the app (that needs an admin), so seed it
+ * here with the service-role key.
  *
  *   SUPABASE_URL=... \
  *   SUPABASE_SERVICE_ROLE_KEY=... \
- *   SUPER_ADMIN_EMAIL=setup@parfett.party \
- *   SUPER_ADMIN_PASSWORD='a long shared passphrase' \
- *   npm run bootstrap:super-admin
+ *   ADMIN_EMAIL=admin@parfett.party \
+ *   ADMIN_PASSWORD='a long shared passphrase' \
+ *   npm run bootstrap:admin
  *
- * Idempotent: re-running finds the existing user and ensures the admins row.
+ * (SUPER_ADMIN_EMAIL / SUPER_ADMIN_PASSWORD still work as fallbacks.)
+ * Idempotent: re-running finds the existing user and ensures the hosts row.
  */
 import { createClient, type User } from '@supabase/supabase-js';
 
@@ -20,6 +21,16 @@ function required(name: string): string {
     throw new Error(`Missing required env var: ${name}`);
   }
   return value;
+}
+
+function firstOf(...names: string[]): string {
+  for (const name of names) {
+    const value = process.env[name];
+    if (value) {
+      return value;
+    }
+  }
+  throw new Error(`Missing required env var: one of ${names.join(', ')}`);
 }
 
 async function findUserByEmail(
@@ -46,9 +57,9 @@ async function findUserByEmail(
 async function main(): Promise<void> {
   const url = required('SUPABASE_URL');
   const serviceRoleKey = required('SUPABASE_SERVICE_ROLE_KEY');
-  const email = required('SUPER_ADMIN_EMAIL');
-  const password = required('SUPER_ADMIN_PASSWORD');
-  const displayName = process.env.SUPER_ADMIN_DISPLAY_NAME ?? 'Party Setup';
+  const email = firstOf('ADMIN_EMAIL', 'SUPER_ADMIN_EMAIL');
+  const password = firstOf('ADMIN_PASSWORD', 'SUPER_ADMIN_PASSWORD');
+  const name = process.env.ADMIN_NAME ?? process.env.SUPER_ADMIN_DISPLAY_NAME ?? 'Party Admin';
 
   const supabase = createClient(url, serviceRoleKey, {
     auth: { autoRefreshToken: false, persistSession: false },
@@ -72,16 +83,13 @@ async function main(): Promise<void> {
   }
 
   const { error: upsertError } = await supabase
-    .from('admins')
-    .upsert(
-      { user_id: user.id, display_name: displayName, is_super: true },
-      { onConflict: 'user_id' },
-    );
+    .from('hosts')
+    .upsert({ user_id: user.id, name, is_admin: true }, { onConflict: 'user_id' });
   if (upsertError) {
     throw upsertError;
   }
 
-  console.log(`admins row ensured for ${email} with is_super = true.`);
+  console.log(`hosts row ensured for ${email} with is_admin = true.`);
   console.log('Done. Sign in with these credentials at /#/admin to set up parties.');
 }
 

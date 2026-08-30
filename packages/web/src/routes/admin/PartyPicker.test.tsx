@@ -22,8 +22,8 @@ function setup(myParties: unknown, role: unknown) {
   );
 }
 
-const asAdmin = { role: 'admin', isSuper: false, loading: false };
-const asSuper = { role: 'super', isSuper: true, loading: false };
+const asHost = { role: 'host', isAdmin: false, loading: false };
+const asAdmin = { role: 'admin', isAdmin: true, loading: false };
 const ready = (p: unknown) => ({ parties: p, loading: false, error: null, refresh: vi.fn() });
 
 beforeEach(() => {
@@ -34,17 +34,17 @@ describe('PartyPicker', () => {
   it('shows loading and error states', () => {
     const { rerender } = setup(
       { parties: [], loading: true, error: null, refresh: vi.fn() },
-      asAdmin,
+      asHost,
     );
     expect(screen.getByText('Loading…')).toBeInTheDocument();
 
     rerender(<div />);
-    setup({ parties: [], loading: false, error: 'denied', refresh: vi.fn() }, asAdmin);
+    setup({ parties: [], loading: false, error: 'denied', refresh: vi.fn() }, asHost);
     expect(screen.getByText('denied')).toBeInTheDocument();
   });
 
   it('lists each accessible party as a link to its guests page', () => {
-    setup(ready(parties), asAdmin);
+    setup(ready(parties), asHost);
     expect(screen.getByRole('link', { name: /Parfett Christmas/ })).toHaveAttribute(
       'href',
       '/admin/christmas/guests',
@@ -57,7 +57,7 @@ describe('PartyPicker', () => {
   });
 
   it('gives the super-admin a Manage parties link', () => {
-    setup(ready(parties), asSuper);
+    setup(ready(parties), asAdmin);
     expect(screen.getByRole('link', { name: /manage parties/i })).toHaveAttribute(
       'href',
       '/admin/parties',
@@ -65,10 +65,10 @@ describe('PartyPicker', () => {
   });
 
   it('shows a role-appropriate empty state', () => {
-    setup(ready([]), asAdmin);
+    setup(ready([]), asHost);
     expect(screen.getByText(/don.t have access to any parties/i)).toBeInTheDocument();
 
-    setup(ready([]), asSuper);
+    setup(ready([]), asAdmin);
     expect(screen.getByText(/no parties yet/i)).toBeInTheDocument();
   });
 });

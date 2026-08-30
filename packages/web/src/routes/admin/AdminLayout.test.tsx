@@ -47,23 +47,23 @@ describe('AdminLayout', () => {
     expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument();
   });
 
-  it('shows a no-access notice for a signed-in non-admin, with sign out', async () => {
+  it('shows a no-access notice for a signed-in non-host, with sign out', async () => {
     setup({ session, loading: false }, { role: null, loading: false });
-    expect(screen.getByRole('heading', { name: /no admin access/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /no access/i })).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: /sign out/i }));
     expect(signOut).toHaveBeenCalledTimes(1);
   });
 
-  it('renders the shell + child route for a regular admin, without super nav', () => {
-    setup({ session, loading: false }, { role: 'admin', loading: false });
+  it('renders the shell + child route for a host, without admin nav', () => {
+    setup({ session, loading: false }, { role: 'host', loading: false });
     expect(screen.getByText('DASHBOARD')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Parfett admin' })).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Parties' })).not.toBeInTheDocument();
   });
 
-  it('shows the super-admin nav links', () => {
-    setup({ session, loading: false }, { role: 'super', loading: false });
+  it('shows the admin nav links', () => {
+    setup({ session, loading: false }, { role: 'admin', loading: false });
     expect(screen.getByRole('link', { name: 'Parties' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Admins' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Hosts' })).toBeInTheDocument();
   });
 });

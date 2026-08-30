@@ -10,7 +10,7 @@ export const DEFAULT_ALPHABET = 'ABCDEFGHJKLMNPQRTUVWXYZ23456789';
 // Party form <-> PartyInput
 // ---------------------------------------------------------------------------
 
-export const RESERVED_SLUGS = ['admin', 'parties', 'admins', 'c', 'api'];
+export const RESERVED_SLUGS = ['admin', 'parties', 'hosts', 'c', 'api'];
 
 export interface PartyForm {
   slug: string;

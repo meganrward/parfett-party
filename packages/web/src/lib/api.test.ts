@@ -59,20 +59,20 @@ import {
   addGuest,
   createParty,
   deleteGuest,
-  getAdmin,
+  getHost,
   getPartyBySlug,
   getQr,
   invokeGenerateQrCodes,
-  listAdmins,
+  listHosts,
   listGuests,
   listMyParties,
-  listPartyAdmins,
+  listPartyHosts,
   listQrCodesWithGuests,
-  setPartyAdmins,
+  setPartyHosts,
   updateGuest,
   updateGuestAdmin,
   updateParty,
-  upsertAdmin,
+  upsertHost,
 } from './api';
 
 const partyRow = {
@@ -197,9 +197,9 @@ describe('party reads', () => {
     await expect(getPartyBySlug('christmas')).resolves.toMatchObject({ id: 'p1' });
   });
 
-  it('listPartyAdmins returns just the user ids', async () => {
+  it('listPartyHosts returns just the user ids', async () => {
     state.fromResults = [{ data: [{ user_id: 'u1' }, { user_id: 'u2' }], error: null }];
-    await expect(listPartyAdmins('p1')).resolves.toEqual(['u1', 'u2']);
+    await expect(listPartyHosts('p1')).resolves.toEqual(['u1', 'u2']);
   });
 
   it('listQrCodesWithGuests maps the embedded guests', async () => {
@@ -225,18 +225,16 @@ describe('party reads', () => {
     });
   });
 
-  it('listAdmins maps rows and throws on error', async () => {
+  it('listHosts maps rows and throws on error', async () => {
     state.fromResults = [
       {
-        data: [{ user_id: 'u1', display_name: 'Meg', is_super: true, created_at: 't' }],
+        data: [{ user_id: 'u1', name: 'Meg', is_admin: true, created_at: 't' }],
         error: null,
       },
     ];
-    await expect(listAdmins()).resolves.toEqual([
-      { userId: 'u1', displayName: 'Meg', isSuper: true },
-    ]);
+    await expect(listHosts()).resolves.toEqual([{ userId: 'u1', name: 'Meg', isAdmin: true }]);
     state.fromResults = [{ data: null, error: { message: 'denied' } }];
-    await expect(listAdmins()).rejects.toThrow('denied');
+    await expect(listHosts()).rejects.toThrow('denied');
   });
 
   it('list helpers tolerate a null data payload', async () => {
@@ -245,7 +243,7 @@ describe('party reads', () => {
     state.fromResults = [{ data: null, error: null }];
     await expect(listQrCodesWithGuests('p1')).resolves.toEqual([]);
     state.fromResults = [{ data: null, error: null }];
-    await expect(listPartyAdmins('p1')).resolves.toEqual([]);
+    await expect(listPartyHosts('p1')).resolves.toEqual([]);
   });
 });
 
@@ -283,39 +281,36 @@ describe('party + guest + admin writes', () => {
     await expect(deleteGuest('g1')).rejects.toThrow('nope');
   });
 
-  it('upsertAdmin defaults is_super to false', async () => {
+  it('upsertHost defaults is_admin to false', async () => {
     state.fromResults = [{ data: null, error: null }];
-    await upsertAdmin({ userId: 'u1', displayName: 'Meg' });
-    expect(state.calls).toContainEqual([
-      'upsert',
-      { user_id: 'u1', display_name: 'Meg', is_super: false },
-    ]);
+    await upsertHost({ userId: 'u1', name: 'Meg' });
+    expect(state.calls).toContainEqual(['upsert', { user_id: 'u1', name: 'Meg', is_admin: false }]);
   });
 
-  it('getAdmin returns the mapped row or null', async () => {
+  it('getHost returns the mapped row or null', async () => {
     state.fromResults = [
       {
-        data: { user_id: 'u1', display_name: 'Meg', is_super: true, created_at: 't' },
+        data: { user_id: 'u1', name: 'Meg', is_admin: true, created_at: 't' },
         error: null,
       },
     ];
-    await expect(getAdmin('u1')).resolves.toEqual({
+    await expect(getHost('u1')).resolves.toEqual({
       userId: 'u1',
-      displayName: 'Meg',
-      isSuper: true,
+      name: 'Meg',
+      isAdmin: true,
     });
     state.fromResults = [{ data: null, error: null }];
-    await expect(getAdmin('u2')).resolves.toBeNull();
+    await expect(getHost('u2')).resolves.toBeNull();
   });
 });
 
-describe('setPartyAdmins', () => {
+describe('setPartyHosts', () => {
   it('deletes existing grants then inserts the new set', async () => {
     state.fromResults = [
       { data: null, error: null },
       { data: null, error: null },
     ];
-    await setPartyAdmins('p1', ['u1', 'u2']);
+    await setPartyHosts('p1', ['u1', 'u2']);
     expect(state.calls).toContainEqual(['delete']);
     expect(state.calls).toContainEqual([
       'insert',
@@ -328,14 +323,14 @@ describe('setPartyAdmins', () => {
 
   it('only deletes when the new set is empty', async () => {
     state.fromResults = [{ data: null, error: null }];
-    await setPartyAdmins('p1', []);
+    await setPartyHosts('p1', []);
     expect(state.calls.filter((c) => c[0] === 'from')).toHaveLength(1);
     expect(state.calls).not.toContainEqual(['insert', expect.anything()]);
   });
 
   it('stops if the delete fails', async () => {
     state.fromResults = [{ data: null, error: { message: 'cannot delete' } }];
-    await expect(setPartyAdmins('p1', ['u1'])).rejects.toThrow('cannot delete');
+    await expect(setPartyHosts('p1', ['u1'])).rejects.toThrow('cannot delete');
   });
 });
 

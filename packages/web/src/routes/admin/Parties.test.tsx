@@ -8,9 +8,9 @@ vi.mock('../../lib/parties-admin', async (importOriginal) => ({
   useSuperParties: vi.fn(),
 }));
 vi.mock('../../lib/api', () => ({
-  listAdmins: vi.fn(),
-  listPartyAdmins: vi.fn(),
-  setPartyAdmins: vi.fn(),
+  listHosts: vi.fn(),
+  listPartyHosts: vi.fn(),
+  setPartyHosts: vi.fn(),
   invokeGenerateQrCodes: vi.fn(),
 }));
 
@@ -56,13 +56,13 @@ function renderParties() {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  vi.mocked(api.listAdmins).mockResolvedValue([
-    { userId: 'u1', displayName: 'Housemate A', isSuper: false },
-    { userId: 'u2', displayName: 'Housemate B', isSuper: false },
-    { userId: 'setup', displayName: 'Party Setup', isSuper: true },
+  vi.mocked(api.listHosts).mockResolvedValue([
+    { userId: 'u1', name: 'Housemate A', isAdmin: false },
+    { userId: 'u2', name: 'Housemate B', isAdmin: false },
+    { userId: 'setup', name: 'Party Setup', isAdmin: true },
   ]);
-  vi.mocked(api.listPartyAdmins).mockResolvedValue(['u1']);
-  vi.mocked(api.setPartyAdmins).mockResolvedValue();
+  vi.mocked(api.listPartyHosts).mockResolvedValue(['u1']);
+  vi.mocked(api.setPartyHosts).mockResolvedValue();
   vi.mocked(api.invokeGenerateQrCodes).mockResolvedValue({
     mode: 'append',
     deleted: 0,
@@ -109,7 +109,7 @@ describe('Parties', () => {
     );
   });
 
-  it('assigns housemates', async () => {
+  it('assigns hosts', async () => {
     vi.mocked(useSuperParties).mockReturnValue(makeParties());
     renderParties();
     await userEvent.click(screen.getByRole('button', { name: /manage/i }));
@@ -123,7 +123,7 @@ describe('Parties', () => {
 
     await userEvent.click(boxB);
     await userEvent.click(screen.getByRole('button', { name: /save access/i }));
-    expect(api.setPartyAdmins).toHaveBeenCalledWith('p1', ['u1', 'u2']);
+    expect(api.setPartyHosts).toHaveBeenCalledWith('p1', ['u1', 'u2']);
   });
 
   it('generates a batch and regenerates unused after confirming', async () => {

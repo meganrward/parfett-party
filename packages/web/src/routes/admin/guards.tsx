@@ -12,12 +12,12 @@ function Checking() {
 }
 
 /** Only super-admins may see the wrapped routes. */
-export function RequireSuper() {
+export function RequireAdmin() {
   const { role, loading } = useAdminRole();
   if (loading) {
     return <Checking />;
   }
-  return role === 'super' ? <Outlet /> : <Navigate to="/admin" replace />;
+  return role === 'admin' ? <Outlet /> : <Navigate to="/admin" replace />;
 }
 
 /** Only admins with access to the party in the :slug param may see the wrapped routes. */

@@ -11,25 +11,25 @@ select plan(22);
 insert into auth.users (instance_id, id, aud, role, email)
 values
   ('00000000-0000-0000-0000-000000000000', '11111111-1111-1111-1111-111111111111',
-   'authenticated', 'authenticated', 'super@parfett.test'),
+   'authenticated', 'authenticated', 'admin@parfett.test'),
   ('00000000-0000-0000-0000-000000000000', '22222222-2222-2222-2222-222222222222',
-   'authenticated', 'authenticated', 'housemate-a@parfett.test'),
+   'authenticated', 'authenticated', 'host-a@parfett.test'),
   ('00000000-0000-0000-0000-000000000000', '33333333-3333-3333-3333-333333333333',
-   'authenticated', 'authenticated', 'housemate-b@parfett.test');
+   'authenticated', 'authenticated', 'host-b@parfett.test');
 
-insert into public.admins (user_id, display_name, is_super)
+insert into public.hosts (user_id, name, is_admin)
 values
-  ('11111111-1111-1111-1111-111111111111', 'Party Setup', true),
-  ('22222222-2222-2222-2222-222222222222', 'Housemate A', false),
-  ('33333333-3333-3333-3333-333333333333', 'Housemate B', false);
+  ('11111111-1111-1111-1111-111111111111', 'Party Admin', true),
+  ('22222222-2222-2222-2222-222222222222', 'Host A', false),
+  ('33333333-3333-3333-3333-333333333333', 'Host B', false);
 
 insert into public.parties (id, slug, name, event_start)
 values
   ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'christmas', 'Parfett Christmas', now()),
   ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'my-birthday', 'Birthday Bash', now());
 
--- Housemate A can access Christmas only.
-insert into public.party_admins (party_id, user_id)
+-- Host A can access Christmas only.
+insert into public.party_hosts (party_id, user_id)
 values ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '22222222-2222-2222-2222-222222222222');
 
 insert into public.qr_codes (id, party_id, token, prefix)
@@ -43,8 +43,8 @@ values
 set local role anon;
 
 select throws_ok('select * from public.parties',      '42501', null, 'anon cannot read parties');
-select throws_ok('select * from public.admins',       '42501', null, 'anon cannot read admins');
-select throws_ok('select * from public.party_admins', '42501', null, 'anon cannot read party_admins');
+select throws_ok('select * from public.hosts',       '42501', null, 'anon cannot read hosts');
+select throws_ok('select * from public.party_hosts', '42501', null, 'anon cannot read party_hosts');
 select throws_ok('select * from public.qr_codes',     '42501', null, 'anon cannot read qr_codes');
 select throws_ok('select * from public.guests',       '42501', null, 'anon cannot read guests');
 
@@ -133,40 +133,40 @@ select is(
 reset role;
 
 -- ---------------------------------------------------------------------
--- RLS: authenticated admins
+-- RLS: authenticated hosts
 -- ---------------------------------------------------------------------
 
 -- Assertions filter to the fixture slugs so the suite is independent of any
 -- other rows already in the local database.
 
--- Housemate A: sees Christmas, not Birthday.
+-- Host A: sees Christmas, not Birthday.
 set local role authenticated;
 set local request.jwt.claims = '{"sub":"22222222-2222-2222-2222-222222222222","role":"authenticated"}';
 
 select is(
   (select count(*)::int from public.parties where slug in ('christmas', 'my-birthday')),
   1,
-  'housemate A sees only the party they are assigned to'
+  'host A sees only the party they are assigned to'
 );
 select is(
   (select slug from public.parties where slug in ('christmas', 'my-birthday')),
   'christmas',
-  'housemate A sees the Christmas party'
+  'host A sees the Christmas party'
 );
-select is(public.is_super(), false, 'is_super() is false for a housemate');
+select is(public.is_admin(), false, 'is_admin() is false for a host');
 
 reset role;
 
--- Super-admin: sees every party.
+-- Admin account: sees every party.
 set local role authenticated;
 set local request.jwt.claims = '{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated"}';
 
 select is(
   (select count(*)::int from public.parties where slug in ('christmas', 'my-birthday')),
   2,
-  'super-admin sees all fixture parties'
+  'admin sees all fixture parties'
 );
-select is(public.is_super(), true, 'is_super() is true for the setup account');
+select is(public.is_admin(), true, 'is_admin() is true for the setup account');
 
 reset role;
 

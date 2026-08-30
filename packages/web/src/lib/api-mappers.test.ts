@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  mapAdmin,
+  mapHost,
   mapGuest,
   mapParty,
   mapQrCodeWithGuests,
@@ -106,14 +106,12 @@ describe('mapParty', () => {
   });
 });
 
-describe('mapAdmin', () => {
+describe('mapHost', () => {
   it('camelCases', () => {
-    expect(
-      mapAdmin({ user_id: 'u1', display_name: 'Meg', is_super: true, created_at: 't' }),
-    ).toEqual({
+    expect(mapHost({ user_id: 'u1', name: 'Meg', is_admin: true, created_at: 't' })).toEqual({
       userId: 'u1',
-      displayName: 'Meg',
-      isSuper: true,
+      name: 'Meg',
+      isAdmin: true,
     });
   });
 });

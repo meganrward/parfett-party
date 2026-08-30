@@ -9,7 +9,7 @@ import {
   type PartyForm,
 } from '../../lib/parties-admin';
 import * as api from '../../lib/api';
-import type { AdminRow, GenerateQrCodesResult, Party, PartyInput } from '../../lib/api-types';
+import type { HostRow, GenerateQrCodesResult, Party, PartyInput } from '../../lib/api-types';
 
 const muted = { color: 'var(--pf-color-text-muted)' } as const;
 
@@ -148,7 +148,7 @@ function PartyEditor({
             />
           </Stack>
           <TextInput
-            label="Housemate prefixes"
+            label="Prefixes"
             hint="Optional, e.g. J, K, W — the count is split evenly across them."
             value={form.prefixes}
             onChange={(e) => set('prefixes', e.target.value)}
@@ -170,8 +170,8 @@ function PartyEditor({
   );
 }
 
-function AssignHousemates({ partyId }: { partyId: string }) {
-  const [admins, setAdmins] = useState<AdminRow[]>([]);
+function AssignHosts({ partyId }: { partyId: string }) {
+  const [hosts, setHosts] = useState<HostRow[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
@@ -179,9 +179,9 @@ function AssignHousemates({ partyId }: { partyId: string }) {
   useEffect(() => {
     let active = true;
     const load = async () => {
-      const [all, current] = await Promise.all([api.listAdmins(), api.listPartyAdmins(partyId)]);
+      const [all, current] = await Promise.all([api.listHosts(), api.listPartyHosts(partyId)]);
       if (active) {
-        setAdmins(all.filter((a) => !a.isSuper));
+        setHosts(all.filter((h) => !h.isAdmin));
         setSelected(new Set(current));
       }
     };
@@ -206,7 +206,7 @@ function AssignHousemates({ partyId }: { partyId: string }) {
     setBusy(true);
     setStatus(null);
     try {
-      await api.setPartyAdmins(partyId, [...selected]);
+      await api.setPartyHosts(partyId, [...selected]);
       setStatus('Saved.');
     } catch (err) {
       setStatus(err instanceof Error ? err.message : 'Could not save access');
@@ -218,16 +218,16 @@ function AssignHousemates({ partyId }: { partyId: string }) {
   return (
     <Card padding={5}>
       <Stack gap={3}>
-        <Heading level={3}>Who can manage this party</Heading>
-        {admins.length === 0 ? (
-          <p style={muted}>No housemate accounts yet — add them under Admins.</p>
+        <Heading level={3}>Hosts for this party</Heading>
+        {hosts.length === 0 ? (
+          <p style={muted}>No host accounts yet — add them under Hosts.</p>
         ) : (
-          admins.map((a) => (
+          hosts.map((h) => (
             <Checkbox
-              key={a.userId}
-              label={a.displayName}
-              checked={selected.has(a.userId)}
-              onChange={() => toggle(a.userId)}
+              key={h.userId}
+              label={h.name}
+              checked={selected.has(h.userId)}
+              onChange={() => toggle(h.userId)}
             />
           ))
         )}
@@ -362,7 +362,7 @@ export function Parties() {
         {selectedParty ? (
           <Stack gap={4}>
             <PartyEditor party={selectedParty} onSave={handleSave} />
-            <AssignHousemates partyId={selectedParty.id} />
+            <AssignHosts partyId={selectedParty.id} />
             <GeneratePanel party={selectedParty} />
           </Stack>
         ) : null}

@@ -56,9 +56,9 @@ export function AdminLayout() {
         style={{ maxWidth: 400, margin: '0 auto', padding: 'var(--pf-space-7) var(--pf-space-5)' }}
       >
         <Stack gap={4}>
-          <Heading level={2}>No admin access</Heading>
+          <Heading level={2}>No access</Heading>
           <p style={{ color: 'var(--pf-color-text-muted)' }}>
-            This account isn&apos;t set up as an admin. Ask the setup account to add you.
+            This account isn&apos;t set up as a host. Ask the admin to add you.
           </p>
           <SignOutButton />
         </Stack>
@@ -82,10 +82,10 @@ export function AdminLayout() {
           <Link to="/admin" style={{ fontWeight: 'var(--pf-font-weight-bold)', color: 'inherit' }}>
             Parfett admin
           </Link>
-          {role === 'super' ? (
+          {role === 'admin' ? (
             <>
               <Link to="/admin/parties">Parties</Link>
-              <Link to="/admin/admins">Admins</Link>
+              <Link to="/admin/hosts">Hosts</Link>
             </>
           ) : null}
         </Stack>

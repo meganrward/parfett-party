@@ -1,24 +1,24 @@
 import { useEffect, useState } from 'react';
 import { Button, Card, Heading, Stack, StatusPill, TextInput } from '@parfett/design-system';
 import * as api from '../../lib/api';
-import type { AdminRow } from '../../lib/api-types';
+import type { HostRow } from '../../lib/api-types';
 
 const muted = { color: 'var(--pf-color-text-muted)' } as const;
 
-function AdminRowItem({
-  admin,
+function HostRowItem({
+  host,
   onRename,
 }: {
-  admin: AdminRow;
+  host: HostRow;
   onRename: (name: string) => Promise<void>;
 }) {
-  const [name, setName] = useState(admin.displayName);
+  const [name, setName] = useState(host.name);
   const [saving, setSaving] = useState(false);
 
   const commit = async () => {
     const next = name.trim();
-    if (!next || next === admin.displayName || saving) {
-      setName(admin.displayName);
+    if (!next || next === host.name || saving) {
+      setName(host.name);
       return;
     }
     setSaving(true);
@@ -33,19 +33,19 @@ function AdminRowItem({
     <Card padding={4}>
       <Stack direction="row" gap={3} align="center" justify="space-between" wrap>
         <TextInput
-          label="Display name"
+          label="Name"
           value={name}
           onChange={(e) => setName(e.target.value)}
           onBlur={() => void commit()}
         />
-        {admin.isSuper ? <StatusPill tone="warning">Super-admin</StatusPill> : null}
+        {host.isAdmin ? <StatusPill tone="warning">Admin</StatusPill> : null}
       </Stack>
     </Card>
   );
 }
 
-export function Admins() {
-  const [admins, setAdmins] = useState<AdminRow[]>([]);
+export function Hosts() {
+  const [hosts, setHosts] = useState<HostRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -53,9 +53,9 @@ export function Admins() {
     setLoading(true);
     setError(null);
     try {
-      setAdmins(await api.listAdmins());
+      setHosts(await api.listHosts());
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load admins');
+      setError(err instanceof Error ? err.message : 'Failed to load hosts');
     } finally {
       setLoading(false);
     }
@@ -65,19 +65,18 @@ export function Admins() {
     void load();
   }, []);
 
-  const rename = async (admin: AdminRow, displayName: string) => {
-    await api.upsertAdmin({ userId: admin.userId, displayName, isSuper: admin.isSuper });
-    setAdmins((prev) => prev.map((a) => (a.userId === admin.userId ? { ...a, displayName } : a)));
+  const rename = async (host: HostRow, name: string) => {
+    await api.upsertHost({ userId: host.userId, name, isAdmin: host.isAdmin });
+    setHosts((prev) => prev.map((h) => (h.userId === host.userId ? { ...h, name } : h)));
   };
 
   return (
     <main style={{ maxWidth: 560, margin: '0 auto', padding: 'var(--pf-space-5)' }}>
       <Stack gap={4}>
-        <Heading level={1}>Admins</Heading>
+        <Heading level={1}>Hosts</Heading>
         <p style={muted}>
-          New housemate accounts are created in the Supabase dashboard (Authentication → Users),
-          then appear here. You can rename them; the super-admin flag stays on the shared setup
-          account.
+          New host accounts are created in the Supabase dashboard (Authentication → Users) for now,
+          then appear here. You can rename them; the admin flag stays on the shared admin account.
         </p>
 
         {loading ? <p style={muted}>Loading…</p> : null}
@@ -90,8 +89,8 @@ export function Admins() {
           </Stack>
         ) : null}
 
-        {admins.map((admin) => (
-          <AdminRowItem key={admin.userId} admin={admin} onRename={(name) => rename(admin, name)} />
+        {hosts.map((host) => (
+          <HostRowItem key={host.userId} host={host} onRename={(name) => rename(host, name)} />
         ))}
       </Stack>
     </main>

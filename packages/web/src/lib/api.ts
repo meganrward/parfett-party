@@ -3,7 +3,7 @@ import type { Database } from './database.types';
 import { normaliseToken } from './token';
 import type { Guest, RsvpStatus } from './guests';
 import {
-  mapAdmin,
+  mapHost,
   mapGuest,
   mapParty,
   mapQrCodeWithGuests,
@@ -12,7 +12,7 @@ import {
   type QrCodeRowish,
 } from './api-mappers';
 import type {
-  AdminRow,
+  HostRow,
   GenerateQrCodesInput,
   GenerateQrCodesResult,
   GuestPatch,
@@ -158,45 +158,45 @@ export async function updateParty(id: string, patch: Partial<PartyInput>): Promi
   return mapParty(data);
 }
 
-export async function listAdmins(): Promise<AdminRow[]> {
-  const { data, error } = await supabase.from('admins').select('*').order('display_name');
+export async function listHosts(): Promise<HostRow[]> {
+  const { data, error } = await supabase.from('hosts').select('*').order('name');
   if (error) {
     fail(error.message);
   }
-  return (data ?? []).map(mapAdmin);
+  return (data ?? []).map(mapHost);
 }
 
-/** The signed-in user's admin row, or null if they are not an admin. */
-export async function getAdmin(userId: string): Promise<AdminRow | null> {
+/** The signed-in user's hosts row, or null if they aren't a host/admin. */
+export async function getHost(userId: string): Promise<HostRow | null> {
   const { data, error } = await supabase
-    .from('admins')
+    .from('hosts')
     .select('*')
     .eq('user_id', userId)
     .maybeSingle();
   if (error) {
     fail(error.message);
   }
-  return data ? mapAdmin(data) : null;
+  return data ? mapHost(data) : null;
 }
 
-export async function upsertAdmin(input: {
+export async function upsertHost(input: {
   userId: string;
-  displayName: string;
-  isSuper?: boolean;
+  name: string;
+  isAdmin?: boolean;
 }): Promise<void> {
-  const { error } = await supabase.from('admins').upsert({
+  const { error } = await supabase.from('hosts').upsert({
     user_id: input.userId,
-    display_name: input.displayName,
-    is_super: input.isSuper ?? false,
+    name: input.name,
+    is_admin: input.isAdmin ?? false,
   });
   if (error) {
     fail(error.message);
   }
 }
 
-export async function listPartyAdmins(partyId: string): Promise<string[]> {
+export async function listPartyHosts(partyId: string): Promise<string[]> {
   const { data, error } = await supabase
-    .from('party_admins')
+    .from('party_hosts')
     .select('user_id')
     .eq('party_id', partyId);
   if (error) {
@@ -206,8 +206,8 @@ export async function listPartyAdmins(partyId: string): Promise<string[]> {
 }
 
 /** Replace the party's admin grants with exactly `userIds`. */
-export async function setPartyAdmins(partyId: string, userIds: string[]): Promise<void> {
-  const { error: delErr } = await supabase.from('party_admins').delete().eq('party_id', partyId);
+export async function setPartyHosts(partyId: string, userIds: string[]): Promise<void> {
+  const { error: delErr } = await supabase.from('party_hosts').delete().eq('party_id', partyId);
   if (delErr) {
     fail(delErr.message);
   }
@@ -215,7 +215,7 @@ export async function setPartyAdmins(partyId: string, userIds: string[]): Promis
     return;
   }
   const { error: insErr } = await supabase
-    .from('party_admins')
+    .from('party_hosts')
     .insert(userIds.map((user_id) => ({ party_id: partyId, user_id })));
   if (insErr) {
     fail(insErr.message);
