@@ -13,6 +13,7 @@ import {
 } from './api-mappers';
 import type {
   HostRow,
+  CreateHostResult,
   GenerateQrCodesInput,
   GenerateQrCodesResult,
   GuestPatch,
@@ -26,6 +27,25 @@ type Fn = keyof Database['public']['Functions'];
 
 function fail(message: string): never {
   throw new Error(message);
+}
+
+/** Invoke an Edge Function, surfacing the function's own `{ error }` body when it fails. */
+async function invokeFn<T>(name: string, body: Record<string, unknown>): Promise<T> {
+  const { data, error } = await supabase.functions.invoke(name, { body });
+  if (error) {
+    const context = (error as { context?: { json?: () => Promise<unknown> } }).context;
+    let bodyMessage: string | null = null;
+    if (context?.json) {
+      try {
+        const payload = (await context.json()) as { error?: string };
+        bodyMessage = typeof payload?.error === 'string' ? payload.error : null;
+      } catch {
+        // no readable body — use the generic message
+      }
+    }
+    fail(bodyMessage ?? error.message);
+  }
+  return data as T;
 }
 
 /** Call an RPC and surface errors. Args are cast: several are nullable in SQL but not in the generated types. */
@@ -225,18 +245,20 @@ export async function setPartyHosts(partyId: string, userIds: string[]): Promise
 export async function invokeGenerateQrCodes(
   input: GenerateQrCodesInput,
 ): Promise<GenerateQrCodesResult> {
-  const { data, error } = await supabase.functions.invoke('generate-qr-codes', {
-    body: {
-      party_id: input.partyId,
-      count: input.count,
-      prefixes: input.prefixes,
-      token_length: input.tokenLength,
-      alphabet: input.alphabet,
-      mode: input.mode,
-    },
+  return invokeFn<GenerateQrCodesResult>('generate-qr-codes', {
+    party_id: input.partyId,
+    count: input.count,
+    prefixes: input.prefixes,
+    token_length: input.tokenLength,
+    alphabet: input.alphabet,
+    mode: input.mode,
   });
-  if (error) {
-    fail(error.message);
-  }
-  return data as GenerateQrCodesResult;
+}
+
+/** Admin only: create a host account (name + email). Sends an invite / returns a setup link. */
+export async function invokeCreateHost(input: {
+  name: string;
+  email: string;
+}): Promise<CreateHostResult> {
+  return invokeFn<CreateHostResult>('create-host', { name: input.name, email: input.email });
 }

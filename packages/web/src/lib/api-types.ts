@@ -45,6 +45,14 @@ export interface HostRow {
   isAdmin: boolean;
 }
 
+export interface CreateHostResult {
+  host: HostRow;
+  /** true if Supabase sent an invite email */
+  invited: boolean;
+  /** password-set link the admin can forward if the email doesn't arrive */
+  setupLink: string | null;
+}
+
 export interface QrCodeWithGuests {
   id: string;
   token: string;

@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 interface Result {
   data: unknown;
-  error: { message: string } | null;
+  error: { message: string; context?: { json: () => Promise<unknown> } } | null;
 }
 
 const { state, mockSupabase } = vi.hoisted(() => {
@@ -62,6 +62,7 @@ import {
   getHost,
   getPartyBySlug,
   getQr,
+  invokeCreateHost,
   invokeGenerateQrCodes,
   listHosts,
   listGuests,
@@ -361,5 +362,35 @@ describe('invokeGenerateQrCodes', () => {
   it('throws when the function returns an error', async () => {
     state.invokeResult = { data: null, error: { message: 'forbidden' } };
     await expect(invokeGenerateQrCodes({ partyId: 'p1' })).rejects.toThrow('forbidden');
+  });
+
+  it("surfaces the function's own error body when present", async () => {
+    state.invokeResult = {
+      data: null,
+      error: {
+        message: 'Edge Function returned a non-2xx status code',
+        context: { json: async () => ({ error: 'a valid email is required' }) },
+      },
+    };
+    await expect(invokeGenerateQrCodes({ partyId: 'p1' })).rejects.toThrow(
+      'a valid email is required',
+    );
+  });
+});
+
+describe('invokeCreateHost', () => {
+  it('posts name + email and returns the result', async () => {
+    state.invokeResult = {
+      data: { host: { userId: 'u9', name: 'Kit', isAdmin: false }, invited: true, setupLink: null },
+      error: null,
+    };
+    const res = await invokeCreateHost({ name: 'Kit', email: 'kit@example.com' });
+    expect(res.host).toEqual({ userId: 'u9', name: 'Kit', isAdmin: false });
+    expect(res.invited).toBe(true);
+    expect(state.calls[0]).toEqual([
+      'invoke',
+      'create-host',
+      { body: { name: 'Kit', email: 'kit@example.com' } },
+    ]);
   });
 });
