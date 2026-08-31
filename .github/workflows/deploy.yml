@@ -1,0 +1,82 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm run test:coverage
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - run: npm run functions:test
+      - name: deno check edge functions
+        run: |
+          deno check supabase/functions/generate-qr-codes/index.ts
+          deno check supabase/functions/create-host/index.ts
+
+  db-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: start local Supabase
+        run: supabase start
+      - run: supabase test db
+      - if: always()
+        run: supabase stop
+
+  deploy:
+    needs: [verify, db-test]
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: check Supabase env vars are set
+        run: |
+          test -n "${{ vars.VITE_SUPABASE_URL }}" || { echo "::error::Repo variable VITE_SUPABASE_URL is missing"; exit 1; }
+          test -n "${{ vars.VITE_SUPABASE_ANON_KEY }}" || { echo "::error::Repo variable VITE_SUPABASE_ANON_KEY is missing"; exit 1; }
+      - run: npm ci
+      - name: build
+        run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: packages/web/dist
+      - id: deployment
+        uses: actions/deploy-pages@v4
