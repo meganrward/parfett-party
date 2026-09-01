@@ -1,5 +1,6 @@
 import { HashRouter, Route, Routes } from 'react-router-dom';
 import { Card, Heading, Stack } from '@parfett/design-system';
+import { Landing } from './routes/Landing';
 import { GuestFlow } from './routes/GuestFlow';
 import { PartyInfo } from './routes/PartyInfo';
 import { AdminLayout } from './routes/admin/AdminLayout';
@@ -27,7 +28,7 @@ export function App() {
   return (
     <HashRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <Routes>
-        <Route path="/" element={<Placeholder title="Parfett Party" />} />
+        <Route path="/" element={<Landing />} />
         <Route path="/:slug/c/:token" element={<GuestFlow />} />
         <Route path="/:slug/c/:token/info" element={<PartyInfo />} />
 
