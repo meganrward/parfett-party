@@ -1,0 +1,22 @@
+/* The invite card's divider: two hairlines with a small sand dot between them. */
+.pf-dot-rule {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.pf-dot-rule::before,
+.pf-dot-rule::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--pf-guest-border);
+}
+
+.pf-dot-rule__dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--pf-guest-sand);
+}

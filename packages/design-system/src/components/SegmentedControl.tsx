@@ -1,4 +1,5 @@
 import { useId } from 'react';
+import { classNames } from './classNames';
 import './SegmentedControl.css';
 
 export interface SegmentedOption<T extends string> {
@@ -15,6 +16,8 @@ export interface SegmentedControlProps<T extends string> {
   value: T | null;
   onChange: (value: T) => void;
   disabled?: boolean;
+  /** Stretch to fill its container as an even grid — the mobile / guest size. */
+  fullWidth?: boolean;
 }
 
 export function SegmentedControl<T extends string>({
@@ -24,11 +27,16 @@ export function SegmentedControl<T extends string>({
   value,
   onChange,
   disabled = false,
+  fullWidth = false,
 }: SegmentedControlProps<T>) {
   const autoName = useId();
   const groupName = name ?? autoName;
   return (
-    <div className="pf-segmented" role="radiogroup" aria-label={label}>
+    <div
+      className={classNames('pf-segmented', fullWidth && 'pf-segmented--full')}
+      role="radiogroup"
+      aria-label={label}
+    >
       {options.map((option) => (
         <label key={option.value} className="pf-segmented__option">
           <input

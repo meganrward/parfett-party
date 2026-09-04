@@ -26,6 +26,19 @@ describe('SegmentedControl', () => {
     expect(onChange).toHaveBeenCalledWith('not_going');
   });
 
+  it('adds the full-width modifier when asked', () => {
+    render(
+      <SegmentedControl
+        label="Coming?"
+        options={options}
+        value={null}
+        onChange={vi.fn()}
+        fullWidth
+      />,
+    );
+    expect(screen.getByRole('radiogroup', { name: 'Coming?' })).toHaveClass('pf-segmented--full');
+  });
+
   it('does not fire when disabled', async () => {
     const onChange = vi.fn();
     render(

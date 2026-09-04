@@ -1,7 +1,15 @@
 /**
  * Parfett design tokens — single light theme for now.
  * Structured so a future restyle is only a change of values here.
+ *
+ * Two palettes live here:
+ *   - the default (host / admin) purple system on `:root`
+ *   - the guest palette, derived from the printed invite card, exposed as
+ *     `--pf-guest-*` raw values and applied by scoping markup in `.pf-guest`,
+ *     which remaps the semantic tokens the components read.
  */
+@import url('https://fonts.googleapis.com/css2?family=Pinyon+Script&family=Playfair+Display:wght@400;500;600;700&family=EB+Garamond:wght@400;500;600&display=swap');
+
 :root {
   /* Colour — surfaces */
   --pf-color-bg: #fdfcfb;
@@ -62,4 +70,71 @@
   --pf-shadow-sm: 0 1px 2px rgba(29, 27, 24, 0.08);
   --pf-shadow-md: 0 4px 12px rgba(29, 27, 24, 0.1);
   --pf-shadow-lg: 0 12px 32px rgba(29, 27, 24, 0.14);
+
+  /* ---------------------------------------------------------------------------
+   * Guest palette — from the invite card. Raw values; applied via `.pf-guest`.
+   * ------------------------------------------------------------------------- */
+  --pf-guest-ink: #14331f;
+  --pf-guest-action: #2f5f78;
+  --pf-guest-action-hover: #264d61;
+  --pf-guest-blue-light: #91bcd1;
+  --pf-guest-blue-tint: #e7f0f4;
+  --pf-guest-blue-border: #c3dbe6;
+  --pf-guest-sand: #beb48f;
+  --pf-guest-sand-tint: #f1ece1;
+  --pf-guest-paper: #fbfaf7;
+  --pf-guest-surface: #ffffff;
+  --pf-guest-border: #ddd7c8;
+  --pf-guest-muted: #6f6a5e;
+  --pf-guest-sunken: #f3f0e8;
+  --pf-guest-shadow-sm: 0 1px 2px rgba(20, 51, 31, 0.07);
+  --pf-guest-shadow-md: 0 4px 12px rgba(20, 51, 31, 0.1);
+
+  /* Guest status pills — pairs tuned for the card's warm surfaces */
+  --pf-guest-success-subtle: #e6efe7;
+  --pf-guest-success: #1b4630;
+  --pf-guest-danger-subtle: #f6e8e4;
+  --pf-guest-danger: #8f3a2f;
+  --pf-guest-warning-subtle: #f2eddc;
+  --pf-guest-warning: #84702c;
+
+  /* Guest typography — the card's three faces */
+  --pf-guest-font-script: 'Pinyon Script', 'Snell Roundhand', cursive;
+  --pf-guest-font-display: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --pf-guest-font-body: 'EB Garamond', Georgia, 'Times New Roman', serif;
+}
+
+/**
+ * Guest scope. Wrap a guest screen in `.pf-guest` and the shared components
+ * pick up the invite-card palette and reading voice with no per-component props:
+ * the semantic tokens they already read are remapped here.
+ */
+.pf-guest {
+  --pf-color-bg: var(--pf-guest-paper);
+  --pf-color-surface: var(--pf-guest-surface);
+  --pf-color-surface-sunken: var(--pf-guest-sunken);
+  --pf-color-border: var(--pf-guest-border);
+
+  --pf-color-text: var(--pf-guest-ink);
+  --pf-color-text-muted: var(--pf-guest-muted);
+
+  --pf-color-brand: var(--pf-guest-action);
+  --pf-color-brand-hover: var(--pf-guest-action-hover);
+  --pf-color-brand-subtle: var(--pf-guest-blue-tint);
+  --pf-color-focus-ring: var(--pf-guest-action);
+
+  --pf-color-success: var(--pf-guest-success);
+  --pf-color-success-subtle: var(--pf-guest-success-subtle);
+  --pf-color-danger: var(--pf-guest-danger);
+  --pf-color-danger-subtle: var(--pf-guest-danger-subtle);
+  --pf-color-warning: var(--pf-guest-warning);
+  --pf-color-warning-subtle: var(--pf-guest-warning-subtle);
+
+  --pf-shadow-sm: var(--pf-guest-shadow-sm);
+  --pf-shadow-md: var(--pf-guest-shadow-md);
+
+  --pf-font-sans: var(--pf-guest-font-body);
+
+  color: var(--pf-color-text);
+  font-family: var(--pf-font-sans);
 }

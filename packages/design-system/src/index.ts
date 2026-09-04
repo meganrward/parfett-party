@@ -8,6 +8,7 @@ export {
   lineHeight,
   radius,
   shadow,
+  guest,
 } from './tokens/tokens';
 
 export { classNames } from './components/classNames';
@@ -29,3 +30,7 @@ export { Table } from './components/Table';
 export type { TableProps } from './components/Table';
 export { SegmentedControl } from './components/SegmentedControl';
 export type { SegmentedControlProps, SegmentedOption } from './components/SegmentedControl';
+export { DotRule } from './components/DotRule';
+export type { DotRuleProps } from './components/DotRule';
+export { Masthead } from './components/Masthead';
+export type { MastheadProps } from './components/Masthead';

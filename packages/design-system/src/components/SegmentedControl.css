@@ -43,3 +43,40 @@
   opacity: 0.55;
   cursor: not-allowed;
 }
+
+/* Full-width variant — an even 2-up grid that fills its container. The main
+ * tap target on every guest screen, so it's sized for thumbs, not pointers. */
+.pf-segmented--full {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  width: 100%;
+  border-radius: var(--pf-radius-md);
+}
+
+.pf-segmented--full .pf-segmented__option {
+  display: block;
+}
+
+.pf-segmented--full .pf-segmented__label {
+  display: block;
+  padding: 14px 12px;
+  border-radius: 5px;
+  text-align: center;
+}
+
+/* Guest scope — Playfair labels, blue selected fill, flat (no raised thumb). */
+.pf-guest .pf-segmented--full {
+  border: 1px solid var(--pf-guest-border);
+}
+
+.pf-guest .pf-segmented__label {
+  font-family: var(--pf-guest-font-display);
+  font-size: 15px;
+}
+
+.pf-guest .pf-segmented__option input:checked + .pf-segmented__label {
+  background: var(--pf-guest-action);
+  color: var(--pf-color-text-inverse);
+  box-shadow: none;
+}

@@ -7,7 +7,7 @@ const meta: Meta<typeof Button> = {
   args: { children: 'RSVP now' },
   argTypes: {
     variant: { control: 'inline-radio', options: ['primary', 'secondary', 'ghost', 'danger'] },
-    size: { control: 'inline-radio', options: ['sm', 'md'] },
+    size: { control: 'inline-radio', options: ['sm', 'md', 'mobile'] },
   },
 };
 
@@ -21,3 +21,26 @@ export const Danger: Story = { args: { variant: 'danger', children: 'Delete gues
 export const Small: Story = { args: { size: 'sm' } };
 export const FullWidth: Story = { args: { fullWidth: true } };
 export const Disabled: Story = { args: { disabled: true } };
+export const Mobile: Story = {
+  args: { size: 'mobile', children: 'Save my response' },
+};
+export const GuestMobile: Story = {
+  args: { size: 'mobile', children: 'Save my response' },
+  decorators: [
+    (Story) => (
+      <div className="pf-guest" style={{ maxWidth: 340 }}>
+        <Story />
+      </div>
+    ),
+  ],
+};
+export const GuestSecondary: Story = {
+  args: { size: 'mobile', variant: 'secondary', children: 'Apple / other (.ics)' },
+  decorators: [
+    (Story) => (
+      <div className="pf-guest" style={{ maxWidth: 340 }}>
+        <Story />
+      </div>
+    ),
+  ],
+};

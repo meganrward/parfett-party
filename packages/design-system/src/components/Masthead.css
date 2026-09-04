@@ -1,0 +1,27 @@
+/* Repeated at the top of the guest screens and admin sign-in: eyebrow, script
+ * wordmark, dot rule — a centred column echoing the invite card. */
+.pf-masthead {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.pf-masthead__eyebrow {
+  font-family: var(--pf-guest-font-display);
+  font-weight: var(--pf-font-weight-medium);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--pf-guest-action);
+}
+
+.pf-masthead__wordmark {
+  margin: 0;
+  font-family: var(--pf-guest-font-script);
+  font-weight: var(--pf-font-weight-regular);
+  font-size: 46px;
+  line-height: 1.15;
+  color: var(--pf-guest-ink);
+}

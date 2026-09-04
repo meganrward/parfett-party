@@ -48,3 +48,25 @@
   opacity: 0.55;
   cursor: not-allowed;
 }
+
+/* Guest scope — invite-card field: Playfair label, a larger 17px input so iOS
+ * doesn't zoom on focus, and the blue focus ring with a translucent halo. */
+.pf-guest .pf-field__label {
+  font-family: var(--pf-guest-font-display);
+  font-size: 14.5px;
+}
+
+.pf-guest .pf-field__hint {
+  font-size: 14px;
+}
+
+.pf-guest .pf-input {
+  padding: 14px 16px;
+  font-size: 17px;
+}
+
+.pf-guest .pf-input:focus-visible {
+  outline-width: 2px;
+  outline-offset: 0;
+  box-shadow: 0 0 0 3px rgba(145, 188, 209, 0.35);
+}

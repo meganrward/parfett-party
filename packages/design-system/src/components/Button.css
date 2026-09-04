@@ -46,6 +46,21 @@
   font-size: var(--pf-font-size-sm);
 }
 
+/* Mobile size — full-width, ~52px tall, used for guest screens and their
+ * sticky bottom bar. Primary/danger carry more vertical padding than the
+ * lighter secondary and ghost. */
+.pf-button--mobile {
+  width: 100%;
+  padding: 15px;
+  border-radius: var(--pf-radius-md);
+  font-size: var(--pf-font-size-md);
+}
+
+.pf-button--mobile.pf-button--primary,
+.pf-button--mobile.pf-button--danger {
+  padding: 17px;
+}
+
 .pf-button--full {
   width: 100%;
 }
@@ -81,4 +96,24 @@
 }
 .pf-button--danger:hover:not([disabled]) {
   --_bg: #8f1e17;
+}
+
+/* Guest scope — the invite-card voice. Palette comes from `.pf-guest` token
+ * remapping; these rules carry the type and the sand hairline. */
+.pf-guest .pf-button {
+  font-family: var(--pf-guest-font-display);
+  font-weight: var(--pf-font-weight-medium);
+}
+
+.pf-guest .pf-button--primary {
+  letter-spacing: 0.02em;
+}
+
+.pf-guest .pf-button--secondary {
+  --_border: var(--pf-guest-sand);
+}
+
+.pf-guest .pf-button[disabled],
+.pf-guest .pf-button[aria-disabled='true'] {
+  opacity: 0.45;
 }

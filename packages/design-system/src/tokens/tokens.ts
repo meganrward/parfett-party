@@ -71,6 +71,32 @@ export const shadow = {
   lg: 'var(--pf-shadow-lg)',
 } as const;
 
+/**
+ * Guest palette — raw invite-card values. Most screens should just wrap markup
+ * in `.pf-guest` and use the shared components; reach for these only for the
+ * bespoke guest furniture (masthead, dot rule, the "YOU" marker).
+ */
+export const guest = {
+  ink: 'var(--pf-guest-ink)',
+  action: 'var(--pf-guest-action)',
+  actionHover: 'var(--pf-guest-action-hover)',
+  blueLight: 'var(--pf-guest-blue-light)',
+  blueTint: 'var(--pf-guest-blue-tint)',
+  blueBorder: 'var(--pf-guest-blue-border)',
+  sand: 'var(--pf-guest-sand)',
+  sandTint: 'var(--pf-guest-sand-tint)',
+  paper: 'var(--pf-guest-paper)',
+  surface: 'var(--pf-guest-surface)',
+  border: 'var(--pf-guest-border)',
+  muted: 'var(--pf-guest-muted)',
+  sunken: 'var(--pf-guest-sunken)',
+  shadowSm: 'var(--pf-guest-shadow-sm)',
+  shadowMd: 'var(--pf-guest-shadow-md)',
+  fontScript: 'var(--pf-guest-font-script)',
+  fontDisplay: 'var(--pf-guest-font-display)',
+  fontBody: 'var(--pf-guest-font-body)',
+} as const;
+
 export const tokens = {
   color,
   space,
@@ -80,4 +106,5 @@ export const tokens = {
   lineHeight,
   radius,
   shadow,
+  guest,
 } as const;

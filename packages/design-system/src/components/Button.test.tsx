@@ -25,6 +25,11 @@ describe('Button', () => {
     );
   });
 
+  it('supports the mobile size', () => {
+    render(<Button size="mobile">Save my response</Button>);
+    expect(screen.getByRole('button')).toHaveClass('pf-button--mobile');
+  });
+
   it('fires onClick when enabled and not when disabled', async () => {
     const onClick = vi.fn();
     const { rerender } = render(<Button onClick={onClick}>Tap</Button>);
