@@ -2,7 +2,9 @@ import { Link } from 'react-router-dom';
 import { Card, Heading, Stack } from '@parfett/design-system';
 import { useAdminRole, useMyParties } from '../../lib/roles';
 
-/** /admin index: the parties this admin can open. */
+const muted = { color: 'var(--pf-color-text-muted)' } as const;
+
+/** H2 — /admin index: the parties this admin can open. Purple (back-office) system. */
 export function PartyPicker() {
   const { parties, loading, error } = useMyParties();
   const { isAdmin } = useAdminRole();
@@ -19,11 +21,11 @@ export function PartyPicker() {
           ) : null}
         </Stack>
 
-        {loading ? <p style={{ color: 'var(--pf-color-text-muted)' }}>Loading…</p> : null}
+        {loading ? <p style={muted}>Loading…</p> : null}
         {error ? <p style={{ color: 'var(--pf-color-danger)' }}>{error}</p> : null}
 
         {!loading && !error && parties.length === 0 ? (
-          <p style={{ color: 'var(--pf-color-text-muted)' }}>
+          <p style={muted}>
             {isAdmin
               ? 'No parties yet. Create one from “Manage parties”.'
               : 'You don’t have access to any parties yet.'}
@@ -35,17 +37,37 @@ export function PartyPicker() {
             <Link
               key={party.id}
               to={`/admin/${party.slug}/guests`}
-              style={{ textDecoration: 'none' }}
+              style={{ textDecoration: 'none', color: 'inherit' }}
             >
-              <Card padding={4}>
-                <Heading level={3}>{party.name}</Heading>
+              <Card
+                padding={4}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: 12,
+                  minHeight: 64,
+                }}
+              >
+                <span style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <span style={{ fontSize: 20, fontWeight: 'var(--pf-font-weight-bold)' }}>
+                    {party.name}
+                  </span>
+                  <span
+                    style={{
+                      fontFamily: 'var(--pf-font-mono)',
+                      fontSize: 13,
+                      color: 'var(--pf-color-text-muted)',
+                    }}
+                  >
+                    /{party.slug}
+                  </span>
+                </span>
                 <span
-                  style={{
-                    color: 'var(--pf-color-text-muted)',
-                    fontSize: 'var(--pf-font-size-sm)',
-                  }}
+                  aria-hidden="true"
+                  style={{ fontSize: 20, color: 'var(--pf-color-text-muted)' }}
                 >
-                  /{party.slug}
+                  ›
                 </span>
               </Card>
             </Link>

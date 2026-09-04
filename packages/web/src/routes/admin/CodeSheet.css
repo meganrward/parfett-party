@@ -22,11 +22,17 @@
   border-radius: var(--pf-radius-md);
 }
 
-/* Plain QR grid */
+/* Plain QR grid — 2-up on the phone, filling out on wider screens */
 .pf-code-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: var(--pf-space-4);
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--pf-space-3);
+}
+
+@media (max-width: 430px) {
+  .pf-code-grid {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 .pf-code-card {
@@ -83,6 +89,7 @@
   position: absolute;
   touch-action: none;
   cursor: grab;
+  background: #fff;
   outline: 2px dashed var(--pf-color-brand);
   outline-offset: 1px;
 }

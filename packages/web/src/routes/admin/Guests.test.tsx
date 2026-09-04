@@ -82,7 +82,7 @@ describe('Guests', () => {
     expect(errored.reload).toHaveBeenCalledTimes(1);
   });
 
-  it('renders one row per guest response with its code + summary', () => {
+  it('renders one card per guest response with its code + summary', () => {
     vi.mocked(useAdminParty).mockReturnValue(makeState());
     renderGuests();
     expect(screen.getByRole('heading', { name: 'Parfett Christmas' })).toBeInTheDocument();
@@ -91,12 +91,18 @@ describe('Guests', () => {
     expect(screen.getByDisplayValue('Sam')).toBeInTheDocument();
     expect(screen.getByDisplayValue('Bob')).toBeInTheDocument();
 
-    // Ellie + Sam are on JAAA (prefix J), Bob on KBBB
-    expect(screen.getAllByText('JAAA')).toHaveLength(2);
-    expect(screen.getAllByText('Housemate J')).toHaveLength(2);
+    // Ellie + Sam share card JAAA (prefix J), Bob is on KBBB
+    const jaaaCards = screen
+      .getAllByText('JAAA')
+      .map((el) => el.closest<HTMLElement>('[role="group"]')!);
+    expect(jaaaCards).toHaveLength(2);
+    jaaaCards.forEach((card) => {
+      expect(within(card).getByText(/handed out by Housemate J/)).toBeInTheDocument();
+    });
 
-    const summary = screen.getByText('Guests').closest('div')!.parentElement!;
-    expect(within(summary).getByText('3')).toBeInTheDocument();
+    // Hero headcount: 3 guests across 2 cards; count line reflects the filtered view
+    expect(screen.getByText('of 3 guests on 2 cards')).toBeInTheDocument();
+    expect(screen.getByText('3 of 3 shown')).toBeInTheDocument();
   });
 
   it('filters by response status', async () => {
@@ -121,7 +127,7 @@ describe('Guests', () => {
     vi.mocked(useAdminParty).mockReturnValue(state);
     renderGuests();
 
-    const bobRow = screen.getByDisplayValue('Bob').closest('tr')!;
+    const bobRow = screen.getByDisplayValue('Bob').closest<HTMLElement>('[role="group"]')!;
     await userEvent.click(within(bobRow).getByRole('radio', { name: 'Going' }));
     expect(state.editGuest).toHaveBeenCalledWith('g3', { name: 'Bob', status: 'going' });
 
