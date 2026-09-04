@@ -1,8 +1,12 @@
 import { useState } from 'react';
-import { Button, Card, Heading, Stack, TextInput } from '@parfett/design-system';
+import { Button, Masthead, Stack } from '@parfett/design-system';
+import { GuestCard, GuestLabel, GuestScreen, guestFieldStyle } from '../../components/guest';
 import { signIn } from '../../lib/auth';
 
-/** Shown by AdminLayout whenever there is no session. */
+/**
+ * H1 — the front door. Shown by AdminLayout whenever there is no session, on the
+ * invite-card system (the purple admin shell only appears once you're in).
+ */
 export function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -25,10 +29,8 @@ export function Login() {
   };
 
   return (
-    <main
-      style={{ maxWidth: 400, margin: '0 auto', padding: 'var(--pf-space-6) var(--pf-space-5)' }}
-    >
-      <Card padding={6}>
+    <GuestScreen contentStyle={{ justifyContent: 'flex-start', paddingTop: 'var(--pf-space-6)' }}>
+      <GuestCard elevated>
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -36,30 +38,39 @@ export function Login() {
           }}
         >
           <Stack gap={4}>
-            <Heading level={1}>Parfett admin</Heading>
-            <TextInput
-              label="Email"
-              type="email"
-              autoComplete="username"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-            <TextInput
-              label="Password"
-              type="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-            {error ? <span style={{ color: 'var(--pf-color-danger)' }}>{error}</span> : null}
-            <Button type="submit" disabled={busy}>
+            <Masthead eyebrow="Hosts only" wordmark="Parfett Party" wordmarkSize={40} />
+            <label className="pf-field" style={guestFieldStyle}>
+              <GuestLabel>Email</GuestLabel>
+              <input
+                className="pf-input"
+                type="email"
+                autoComplete="username"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </label>
+            <label className="pf-field" style={guestFieldStyle}>
+              <GuestLabel>Password</GuestLabel>
+              <input
+                className="pf-input"
+                type="password"
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                style={error ? { borderColor: 'var(--pf-guest-danger)' } : undefined}
+              />
+            </label>
+            {error ? (
+              <span style={{ color: 'var(--pf-guest-danger)', fontSize: 16 }}>{error}</span>
+            ) : null}
+            <Button type="submit" size="mobile" disabled={busy}>
               {busy ? 'Signing in…' : 'Sign in'}
             </Button>
           </Stack>
         </form>
-      </Card>
-    </main>
+      </GuestCard>
+    </GuestScreen>
   );
 }
