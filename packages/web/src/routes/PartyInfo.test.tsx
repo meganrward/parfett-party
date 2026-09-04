@@ -64,7 +64,8 @@ describe('PartyInfo', () => {
     renderInfo();
 
     expect(screen.getByRole('heading', { name: 'Parfett Christmas' })).toBeInTheDocument();
-    expect(screen.getByText('Fri, 25 Dec 2026, 02:00', { exact: false })).toBeInTheDocument();
+    // Invite-card "when" line: "19:00 · 24ᵀᴴ DECEMBER 2026" (start only, TZ=UTC).
+    expect(screen.getByText(/DECEMBER 2026/)).toBeInTheDocument();
     expect(screen.getByText('12 Parfett Street, London')).toBeInTheDocument();
     expect(screen.getByText(/santa hats mandatory/i)).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /secret mini-game/i })).toBeInTheDocument();

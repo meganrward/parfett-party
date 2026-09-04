@@ -7,6 +7,8 @@ import {
   hasCalendarInfo,
   icsContent,
   icsDownloadFilename,
+  inviteWhenParts,
+  ordinalSuffix,
   toICSDate,
   type CalendarEvent,
 } from './calendar';
@@ -103,6 +105,35 @@ describe('icsDownloadFilename', () => {
   it('slugifies the name', () => {
     expect(icsDownloadFilename({ name: 'Parfett Christmas!' })).toBe('parfett-christmas.ics');
     expect(icsDownloadFilename({ name: '///' })).toBe('event.ics');
+  });
+});
+
+describe('ordinalSuffix', () => {
+  it('handles the teens as TH', () => {
+    expect([11, 12, 13].map(ordinalSuffix)).toEqual(['TH', 'TH', 'TH']);
+  });
+
+  it('picks ST / ND / RD / TH by last digit', () => {
+    expect([1, 21, 31].map(ordinalSuffix)).toEqual(['ST', 'ST', 'ST']);
+    expect([2, 22].map(ordinalSuffix)).toEqual(['ND', 'ND']);
+    expect([3, 23].map(ordinalSuffix)).toEqual(['RD', 'RD']);
+    expect([4, 10, 20].map(ordinalSuffix)).toEqual(['TH', 'TH', 'TH']);
+  });
+});
+
+describe('inviteWhenParts', () => {
+  it('is null without a parseable start', () => {
+    expect(inviteWhenParts({ eventStart: null })).toBeNull();
+    expect(inviteWhenParts({ eventStart: 'nope' })).toBeNull();
+  });
+
+  it('breaks the start into time / day / ordinal / month-year (en-GB, 24h)', () => {
+    expect(inviteWhenParts({ eventStart: '2026-11-21T19:00:00Z' })).toEqual({
+      time: '19:00',
+      day: 21,
+      ordinal: 'ST',
+      monthYear: 'NOVEMBER 2026',
+    });
   });
 });
 

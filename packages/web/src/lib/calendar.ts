@@ -157,6 +157,55 @@ export function formatEventWhen(
   return `${dateTime(start)} – ${endText}`;
 }
 
+/** English ordinal suffix, upper-case: 1 → ST, 2 → ND, 3 → RD, 11 → TH, 21 → ST. */
+export function ordinalSuffix(day: number): string {
+  const mod100 = day % 100;
+  if (mod100 >= 11 && mod100 <= 13) {
+    return 'TH';
+  }
+  switch (day % 10) {
+    case 1:
+      return 'ST';
+    case 2:
+      return 'ND';
+    case 3:
+      return 'RD';
+    default:
+      return 'TH';
+  }
+}
+
+export interface InviteWhen {
+  /** 24h clock, e.g. "19:00". */
+  time: string;
+  day: number;
+  /** Upper-case ordinal suffix for `day`, e.g. "ST". */
+  ordinal: string;
+  /** Upper-case month + year, e.g. "NOVEMBER 2026". */
+  monthYear: string;
+}
+
+/**
+ * The invite-card "when" line, broken into parts so the ordinal can sit in a
+ * `<sup>`: "19:00 · 21ˢᵀ NOVEMBER 2026". Null when there's no parseable start.
+ */
+export function inviteWhenParts(event: Pick<CalendarEvent, 'eventStart'>): InviteWhen | null {
+  if (!event.eventStart || Number.isNaN(Date.parse(event.eventStart))) {
+    return null;
+  }
+  const start = new Date(event.eventStart);
+  const day = Number(start.toLocaleDateString(WHEN_LOCALE, { day: 'numeric' }));
+  const monthYear = start
+    .toLocaleDateString(WHEN_LOCALE, { month: 'long', year: 'numeric' })
+    .toUpperCase();
+  return {
+    time: start.toLocaleTimeString(WHEN_LOCALE, TIME_FMT),
+    day,
+    ordinal: ordinalSuffix(day),
+    monthYear,
+  };
+}
+
 /** Thin DOM wrapper; the string builder above is what tests exercise. */
 export function icsBlob(event: CalendarEvent): Blob | null {
   const content = icsContent(event);
