@@ -12,6 +12,7 @@ vi.mock('../../lib/api', () => ({
   listPartyHosts: vi.fn(),
   setPartyHosts: vi.fn(),
   invokeGenerateQrCodes: vi.fn(),
+  listQrCodesWithGuests: vi.fn(),
 }));
 
 import * as api from '../../lib/api';
@@ -69,14 +70,23 @@ beforeEach(() => {
     count: 75,
     created: [],
   });
+  vi.mocked(api.listQrCodesWithGuests).mockResolvedValue([]);
 });
 
+/** The rail row for a party doubles as its "open" control. */
+const openParty = (name: RegExp | string) => userEvent.click(screen.getByRole('button', { name }));
+
 describe('Parties', () => {
+  const railNewParty = () =>
+    userEvent.click(
+      within(screen.getByRole('complementary')).getByRole('button', { name: /new party/i }),
+    );
+
   it('lists parties and opens a blank editor from "New party"', async () => {
     vi.mocked(useSuperParties).mockReturnValue(makeParties());
     renderParties();
     expect(screen.getByRole('heading', { name: 'Parfett Christmas' })).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: /new party/i }));
+    await railNewParty();
     expect(screen.getByRole('heading', { name: 'New party' })).toBeInTheDocument();
   });
 
@@ -84,7 +94,7 @@ describe('Parties', () => {
     const state = makeParties();
     vi.mocked(useSuperParties).mockReturnValue(state);
     renderParties();
-    await userEvent.click(screen.getByRole('button', { name: /new party/i }));
+    await railNewParty();
     await userEvent.click(screen.getByRole('button', { name: /create party/i }));
     expect(screen.getByText(/give the party a name/i)).toBeInTheDocument();
     expect(state.create).not.toHaveBeenCalled();
@@ -95,9 +105,8 @@ describe('Parties', () => {
     vi.mocked(useSuperParties).mockReturnValue(state);
     renderParties();
 
-    await userEvent.click(screen.getByRole('button', { name: /manage/i }));
-    const editor = screen.getByRole('heading', { name: /edit parfett christmas/i }).closest('div')!;
-    const name = within(editor.parentElement!).getByLabelText('Name');
+    await openParty(/parfett christmas/i);
+    const name = screen.getByLabelText('Name');
     expect(name).toHaveValue('Parfett Christmas');
     await userEvent.clear(name);
     await userEvent.type(name, 'Xmas Do');
@@ -112,7 +121,7 @@ describe('Parties', () => {
   it('assigns hosts', async () => {
     vi.mocked(useSuperParties).mockReturnValue(makeParties());
     renderParties();
-    await userEvent.click(screen.getByRole('button', { name: /manage/i }));
+    await openParty(/parfett christmas/i);
 
     const boxA = await screen.findByRole('checkbox', { name: 'Housemate A' });
     const boxB = screen.getByRole('checkbox', { name: 'Housemate B' });
@@ -126,23 +135,24 @@ describe('Parties', () => {
     expect(api.setPartyHosts).toHaveBeenCalledWith('p1', ['u1', 'u2']);
   });
 
-  it('generates a batch and regenerates unused after confirming', async () => {
-    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true);
+  it('generates a batch and regenerates unused after confirming in the dialog', async () => {
     vi.mocked(useSuperParties).mockReturnValue(makeParties());
     renderParties();
-    await userEvent.click(screen.getByRole('button', { name: /manage/i }));
+    await openParty(/parfett christmas/i);
 
     await userEvent.click(screen.getByRole('button', { name: /generate 75/i }));
     expect(api.invokeGenerateQrCodes).toHaveBeenCalledWith({ partyId: 'p1', mode: 'append' });
     expect(await screen.findByText(/made 75 codes/i)).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: /regenerate unused/i }));
-    expect(confirm).toHaveBeenCalled();
+    const dialog = screen.getByRole('dialog', { name: /regenerate unused codes/i });
+    await userEvent.click(
+      within(dialog).getByRole('button', { name: /delete .* and regenerate/i }),
+    );
     expect(api.invokeGenerateQrCodes).toHaveBeenCalledWith({
       partyId: 'p1',
       mode: 'regenerate-unused',
     });
-    confirm.mockRestore();
   });
 
   it('shows a load error with retry', async () => {

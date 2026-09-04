@@ -1,9 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { Button, Card, Heading, Stack, StatusPill, TextInput } from '@parfett/design-system';
 import * as api from '../../lib/api';
 import type { HostRow } from '../../lib/api-types';
 
 const muted = { color: 'var(--pf-color-text-muted)' } as const;
+
+const panel = (accent: 'ok' | 'bad'): CSSProperties => ({
+  border: `1px solid ${accent === 'ok' ? 'var(--pf-color-brand-border, #ddcbfb)' : 'var(--pf-color-danger)'}`,
+  background: accent === 'ok' ? 'var(--pf-color-brand-subtle)' : 'var(--pf-color-danger-subtle)',
+  borderRadius: 'var(--pf-radius-md)',
+  padding: 'var(--pf-space-4)',
+});
 
 function HostRowItem({
   host,
@@ -32,13 +39,20 @@ function HostRowItem({
   return (
     <Card padding={4}>
       <Stack direction="row" gap={3} align="center" justify="space-between" wrap>
-        <TextInput
-          label="Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          onBlur={() => void commit()}
-        />
-        {host.isAdmin ? <StatusPill tone="warning">Admin</StatusPill> : null}
+        <div style={{ maxWidth: 260, width: '100%' }}>
+          <TextInput
+            label="Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onBlur={() => void commit()}
+          />
+        </div>
+        <Stack direction="row" gap={3} align="center">
+          {saving ? (
+            <span style={{ ...muted, fontSize: 'var(--pf-font-size-sm)' }}>Saving…</span>
+          ) : null}
+          {host.isAdmin ? <StatusPill tone="warning">Admin</StatusPill> : null}
+        </Stack>
       </Stack>
     </Card>
   );
@@ -90,22 +104,55 @@ function NewHostForm({ onCreated }: { onCreated: (host: HostRow) => void }) {
             onChange={(e) => setEmail(e.target.value)}
             required
           />
-          {error ? <span style={{ color: 'var(--pf-color-danger)' }}>{error}</span> : null}
-          {result ? (
-            <Stack gap={1}>
-              <span style={muted}>
-                {result.invited
-                  ? 'Invite email sent.'
-                  : 'Host added. Send them the link below to set a password:'}
-              </span>
-              {result.setupLink ? (
-                <TextInput label="Setup link" value={result.setupLink} readOnly />
-              ) : null}
-            </Stack>
-          ) : null}
+
           <Button type="submit" disabled={busy}>
             {busy ? 'Adding…' : 'Add host'}
           </Button>
+
+          {error ? (
+            <div style={panel('bad')}>
+              <Stack gap={1}>
+                <span style={{ fontWeight: 'var(--pf-font-weight-medium)' }}>
+                  Could not create the host
+                </span>
+                <span style={muted}>{error}</span>
+              </Stack>
+            </div>
+          ) : null}
+
+          {result ? (
+            <div style={panel('ok')}>
+              <Stack gap={2}>
+                <span>
+                  {result.invited
+                    ? 'Invite email sent.'
+                    : 'Host added. Send them the link below to set a password:'}
+                </span>
+                {result.setupLink ? (
+                  <>
+                    <TextInput
+                      label="Setup link"
+                      style={{ fontFamily: 'var(--pf-font-mono)' }}
+                      value={result.setupLink}
+                      readOnly
+                    />
+                    <Stack direction="row" gap={2}>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => void navigator.clipboard?.writeText(result.setupLink ?? '')}
+                      >
+                        Copy link
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => setResult(null)}>
+                        Done
+                      </Button>
+                    </Stack>
+                  </>
+                ) : null}
+              </Stack>
+            </div>
+          ) : null}
         </Stack>
       </form>
     </Card>
@@ -142,30 +189,43 @@ export function Hosts() {
     setHosts((prev) => (prev.some((h) => h.userId === host.userId) ? prev : [...prev, host]));
 
   return (
-    <main style={{ maxWidth: 560, margin: '0 auto', padding: 'var(--pf-space-5)' }}>
-      <Stack gap={4}>
-        <Heading level={1}>Hosts</Heading>
-        <p style={muted}>
-          Add a host by name + email. They get an invite (or a setup link you can forward). The
-          admin flag stays on the shared admin account.
-        </p>
+    <main style={{ maxWidth: 1040, margin: '0 auto', padding: 'var(--pf-space-5)' }}>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'minmax(0, 1fr) 380px',
+          gap: 'var(--pf-space-5)',
+          alignItems: 'start',
+        }}
+      >
+        <section>
+          <Stack gap={4}>
+            <Heading level={1}>Hosts</Heading>
+            <p style={muted}>
+              Add a host by name and email. They get an invite, or a setup link you can forward. The
+              admin flag stays on the shared admin account.
+            </p>
 
-        <NewHostForm onCreated={onCreated} />
+            {loading ? <p style={muted}>Loading…</p> : null}
+            {error ? (
+              <Stack gap={2}>
+                <span style={{ color: 'var(--pf-color-danger)' }}>Failed to load hosts</span>
+                <Button variant="secondary" onClick={() => void load()}>
+                  Try again
+                </Button>
+              </Stack>
+            ) : null}
 
-        {loading ? <p style={muted}>Loading…</p> : null}
-        {error ? (
-          <Stack gap={2}>
-            <span style={{ color: 'var(--pf-color-danger)' }}>{error}</span>
-            <Button variant="secondary" onClick={() => void load()}>
-              Try again
-            </Button>
+            {hosts.map((host) => (
+              <HostRowItem key={host.userId} host={host} onRename={(name) => rename(host, name)} />
+            ))}
           </Stack>
-        ) : null}
+        </section>
 
-        {hosts.map((host) => (
-          <HostRowItem key={host.userId} host={host} onRename={(name) => rename(host, name)} />
-        ))}
-      </Stack>
+        <aside style={{ position: 'sticky', top: 'var(--pf-space-5)' }}>
+          <NewHostForm onCreated={onCreated} />
+        </aside>
+      </div>
     </main>
   );
 }
