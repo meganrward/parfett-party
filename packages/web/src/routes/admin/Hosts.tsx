@@ -15,12 +15,16 @@ const panel = (accent: 'ok' | 'bad'): CSSProperties => ({
 function HostRowItem({
   host,
   onRename,
+  onRemove,
 }: {
   host: HostRow;
   onRename: (name: string) => Promise<void>;
+  onRemove: () => Promise<void>;
 }) {
   const [name, setName] = useState(host.name);
   const [saving, setSaving] = useState(false);
+  const [removing, setRemoving] = useState(false);
+  const [removeError, setRemoveError] = useState<string | null>(null);
 
   const commit = async () => {
     const next = name.trim();
@@ -33,6 +37,20 @@ function HostRowItem({
       await onRename(next);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const remove = async () => {
+    if (removing || !window.confirm(`Remove ${host.name}? They'll lose access immediately.`)) {
+      return;
+    }
+    setRemoving(true);
+    setRemoveError(null);
+    try {
+      await onRemove();
+    } catch (err) {
+      setRemoveError(err instanceof Error ? err.message : 'Could not remove the host');
+      setRemoving(false);
     }
   };
 
@@ -51,7 +69,18 @@ function HostRowItem({
           {saving ? (
             <span style={{ ...muted, fontSize: 'var(--pf-font-size-sm)' }}>Saving…</span>
           ) : null}
-          {host.isAdmin ? <StatusPill tone="warning">Admin</StatusPill> : null}
+          {removeError ? (
+            <span style={{ color: 'var(--pf-color-danger)', fontSize: 'var(--pf-font-size-sm)' }}>
+              {removeError}
+            </span>
+          ) : null}
+          {host.isAdmin ? (
+            <StatusPill tone="warning">Admin</StatusPill>
+          ) : (
+            <Button size="sm" variant="ghost" disabled={removing} onClick={() => void remove()}>
+              {removing ? 'Removing…' : 'Remove'}
+            </Button>
+          )}
         </Stack>
       </Stack>
     </Card>
@@ -63,7 +92,7 @@ function NewHostForm({ onCreated }: { onCreated: (host: HostRow) => void }) {
   const [email, setEmail] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<{ invited: boolean; setupLink: string | null } | null>(null);
+  const [result, setResult] = useState<{ invited: boolean; mailError: string | null } | null>(null);
 
   const submit = async () => {
     if (busy) {
@@ -75,7 +104,7 @@ function NewHostForm({ onCreated }: { onCreated: (host: HostRow) => void }) {
     try {
       const res = await api.invokeCreateHost({ name: name.trim(), email: email.trim() });
       onCreated(res.host);
-      setResult({ invited: res.invited, setupLink: res.setupLink });
+      setResult({ invited: res.invited, mailError: res.mailError });
       setName('');
       setEmail('');
     } catch (err) {
@@ -121,35 +150,17 @@ function NewHostForm({ onCreated }: { onCreated: (host: HostRow) => void }) {
           ) : null}
 
           {result ? (
-            <div style={panel('ok')}>
+            <div style={panel(result.invited ? 'ok' : 'bad')}>
               <Stack gap={2}>
                 <span>
                   {result.invited
-                    ? 'Invite email sent.'
-                    : 'Host added. Send them the link below to set a password:'}
+                    ? 'Invite email sent — they can follow the link to set a password.'
+                    : "Host added, but the set-password email couldn't be sent."}
                 </span>
-                {result.setupLink ? (
-                  <>
-                    <TextInput
-                      label="Setup link"
-                      style={{ fontFamily: 'var(--pf-font-mono)' }}
-                      value={result.setupLink}
-                      readOnly
-                    />
-                    <Stack direction="row" gap={2}>
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={() => void navigator.clipboard?.writeText(result.setupLink ?? '')}
-                      >
-                        Copy link
-                      </Button>
-                      <Button size="sm" variant="ghost" onClick={() => setResult(null)}>
-                        Done
-                      </Button>
-                    </Stack>
-                  </>
-                ) : null}
+                {result.mailError ? <span style={muted}>{result.mailError}</span> : null}
+                <Button size="sm" variant="ghost" onClick={() => setResult(null)}>
+                  Done
+                </Button>
               </Stack>
             </div>
           ) : null}
@@ -188,6 +199,11 @@ export function Hosts() {
   const onCreated = (host: HostRow) =>
     setHosts((prev) => (prev.some((h) => h.userId === host.userId) ? prev : [...prev, host]));
 
+  const remove = async (host: HostRow) => {
+    await api.invokeDeleteHost(host.userId);
+    setHosts((prev) => prev.filter((h) => h.userId !== host.userId));
+  };
+
   return (
     <main style={{ maxWidth: 1040, margin: '0 auto', padding: 'var(--pf-space-5)' }}>
       <div
@@ -202,8 +218,8 @@ export function Hosts() {
           <Stack gap={4}>
             <Heading level={1}>Hosts</Heading>
             <p style={muted}>
-              Add a host by name and email. They get an invite, or a setup link you can forward. The
-              admin flag stays on the shared admin account.
+              Add a host by name and email. They&apos;ll get an email with a link to set their
+              password. The admin flag stays on the shared admin account.
             </p>
 
             {loading ? <p style={muted}>Loading…</p> : null}
@@ -217,7 +233,12 @@ export function Hosts() {
             ) : null}
 
             {hosts.map((host) => (
-              <HostRowItem key={host.userId} host={host} onRename={(name) => rename(host, name)} />
+              <HostRowItem
+                key={host.userId}
+                host={host}
+                onRename={(name) => rename(host, name)}
+                onRemove={() => remove(host)}
+              />
             ))}
           </Stack>
         </section>

@@ -47,10 +47,10 @@ export interface HostRow {
 
 export interface CreateHostResult {
   host: HostRow;
-  /** true if Supabase sent an invite email */
+  /** true if Supabase sent a set-password email (invite or recovery) */
   invited: boolean;
-  /** password-set link the admin can forward if the email doesn't arrive */
-  setupLink: string | null;
+  /** Supabase's error message when the set-password email failed to send */
+  mailError: string | null;
 }
 
 export interface QrCodeWithGuests {

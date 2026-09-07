@@ -1,4 +1,5 @@
-import { HashRouter, Route, Routes } from 'react-router-dom';
+import { useEffect } from 'react';
+import { HashRouter, Route, Routes, useNavigate } from 'react-router-dom';
 import { Card, Heading, Stack } from '@parfett/design-system';
 import { Landing } from './routes/Landing';
 import { GuestFlow } from './routes/GuestFlow';
@@ -9,7 +10,53 @@ import { Guests } from './routes/admin/Guests';
 import { CodeSheet } from './routes/admin/CodeSheet';
 import { Parties } from './routes/admin/Parties';
 import { Hosts } from './routes/admin/Hosts';
+import { SetPassword } from './routes/admin/SetPassword';
 import { RequirePartyAccess, RequireAdmin } from './routes/admin/guards';
+import { supabase } from './lib/supabase';
+
+/**
+ * Supabase's invite/recovery links land on the site root with tokens appended as a
+ * URL fragment (`#access_token=...`), which the HashRouter can't parse as a route —
+ * it 404s. supabase-js still picks the tokens up on load (`detectSessionInUrl`) and
+ * fires this event once the session is established, so we redirect into the app.
+ */
+function useAuthRecoveryRedirect() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        navigate('/admin/set-password', { replace: true });
+      }
+    });
+    return () => sub.subscription.unsubscribe();
+  }, [navigate]);
+}
+
+function Routing() {
+  useAuthRecoveryRedirect();
+  return (
+    <Routes>
+      <Route path="/" element={<Landing />} />
+      <Route path="/:slug/c/:token" element={<GuestFlow />} />
+      <Route path="/:slug/c/:token/info" element={<PartyInfo />} />
+
+      <Route path="/admin/set-password" element={<SetPassword />} />
+      <Route path="/admin" element={<AdminLayout />}>
+        <Route index element={<PartyPicker />} />
+        <Route element={<RequirePartyAccess />}>
+          <Route path=":slug/guests" element={<Guests />} />
+          <Route path=":slug/codes" element={<CodeSheet />} />
+        </Route>
+        <Route element={<RequireAdmin />}>
+          <Route path="parties" element={<Parties />} />
+          <Route path="hosts" element={<Hosts />} />
+        </Route>
+      </Route>
+
+      <Route path="*" element={<Placeholder title="Not found" />} />
+    </Routes>
+  );
+}
 
 function Placeholder({ title }: { title: string }) {
   return (
@@ -27,25 +74,7 @@ function Placeholder({ title }: { title: string }) {
 export function App() {
   return (
     <HashRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path="/:slug/c/:token" element={<GuestFlow />} />
-        <Route path="/:slug/c/:token/info" element={<PartyInfo />} />
-
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<PartyPicker />} />
-          <Route element={<RequirePartyAccess />}>
-            <Route path=":slug/guests" element={<Guests />} />
-            <Route path=":slug/codes" element={<CodeSheet />} />
-          </Route>
-          <Route element={<RequireAdmin />}>
-            <Route path="parties" element={<Parties />} />
-            <Route path="hosts" element={<Hosts />} />
-          </Route>
-        </Route>
-
-        <Route path="*" element={<Placeholder title="Not found" />} />
-      </Routes>
+      <Routing />
     </HashRouter>
   );
 }

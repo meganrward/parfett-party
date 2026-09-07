@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -6,6 +6,7 @@ vi.mock('../../lib/api', () => ({
   listHosts: vi.fn(),
   upsertHost: vi.fn(),
   invokeCreateHost: vi.fn(),
+  invokeDeleteHost: vi.fn(),
 }));
 
 import * as api from '../../lib/api';
@@ -18,6 +19,7 @@ beforeEach(() => {
     { userId: 'u1', name: 'Host A', isAdmin: false },
   ]);
   vi.mocked(api.upsertHost).mockResolvedValue();
+  vi.mocked(api.invokeDeleteHost).mockResolvedValue();
 });
 
 describe('Hosts', () => {
@@ -57,7 +59,7 @@ describe('Hosts', () => {
     vi.mocked(api.invokeCreateHost).mockResolvedValue({
       host: { userId: 'u9', name: 'Kit', isAdmin: false },
       invited: true,
-      setupLink: null,
+      mailError: null,
     });
     render(<Hosts />);
     const form = (await screen.findByRole('heading', { name: /new host/i })).closest('form')!;
@@ -70,11 +72,11 @@ describe('Hosts', () => {
     expect(screen.getByDisplayValue('Kit')).toBeInTheDocument();
   });
 
-  it('shows the setup link when no invite email was sent', async () => {
+  it('reports a failure to send the set-password email', async () => {
     vi.mocked(api.invokeCreateHost).mockResolvedValue({
       host: { userId: 'u9', name: 'Kit', isAdmin: false },
       invited: false,
-      setupLink: 'https://supabase.test/verify?token=abc',
+      mailError: 'Email rate limit exceeded',
     });
     render(<Hosts />);
     const form = (await screen.findByRole('heading', { name: /new host/i })).closest('form')!;
@@ -82,9 +84,34 @@ describe('Hosts', () => {
     await userEvent.type(within(form).getByLabelText('Email'), 'kit@example.com');
     await userEvent.click(within(form).getByRole('button', { name: /add host/i }));
 
-    expect(
-      await within(form).findByDisplayValue('https://supabase.test/verify?token=abc'),
-    ).toBeInTheDocument();
+    expect(await within(form).findByText(/couldn't be sent/i)).toBeInTheDocument();
+    expect(within(form).getByText('Email rate limit exceeded')).toBeInTheDocument();
+  });
+
+  it('removes a host after confirming', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    render(<Hosts />);
+    await screen.findByDisplayValue('Host A');
+    await userEvent.click(screen.getByRole('button', { name: /remove/i }));
+
+    expect(api.invokeDeleteHost).toHaveBeenCalledWith('u1');
+    await waitFor(() => expect(screen.queryByDisplayValue('Host A')).not.toBeInTheDocument());
+  });
+
+  it('does not remove a host when the confirmation is declined', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(false);
+    render(<Hosts />);
+    await screen.findByDisplayValue('Host A');
+    await userEvent.click(screen.getByRole('button', { name: /remove/i }));
+
+    expect(api.invokeDeleteHost).not.toHaveBeenCalled();
+    expect(screen.getByDisplayValue('Host A')).toBeInTheDocument();
+  });
+
+  it('does not show a remove button for the admin account', async () => {
+    render(<Hosts />);
+    await screen.findByDisplayValue('Party Admin');
+    expect(screen.getAllByRole('button', { name: /remove/i })).toHaveLength(1);
   });
 
   it('surfaces a create error', async () => {

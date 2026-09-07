@@ -75,7 +75,7 @@ Deno.serve(async (req) => {
 
   // 3. Find or create the auth user.
   let userId: string | null = null;
-  let invited = false;
+  let existingUser = false;
   for (let page = 1; page <= 20 && !userId; page += 1) {
     const { data, error } = await admin.auth.admin.listUsers({ page, perPage: 200 });
     if (error) {
@@ -84,31 +84,38 @@ Deno.serve(async (req) => {
     const found = data.users.find((u) => u.email?.toLowerCase() === email);
     if (found) {
       userId = found.id;
+      existingUser = true;
     }
     if (data.users.length < 200) {
       break;
     }
   }
 
+  // 4. Send a working "set your password" email. New users get Supabase's invite
+  // email; existing users (e.g. re-added after removal) get a recovery email.
+  // Both actually send mail, unlike generateLink which only returns a link.
+  let invited = false;
+  let mailError: string | null = null;
   if (!userId) {
     const invite = await admin.auth.admin.inviteUserByEmail(email);
     if (!invite.error && invite.data.user) {
       userId = invite.data.user.id;
       invited = true;
     } else {
+      mailError = invite.error?.message ?? null;
       const created = await admin.auth.admin.createUser({ email, email_confirm: true });
       if (created.error || !created.data.user) {
         return json({ error: 'could not create the user', detail: created.error?.message }, 500);
       }
       userId = created.data.user.id;
+      const reset = await admin.auth.resetPasswordForEmail(email);
+      invited = !reset.error;
+      mailError = reset.error?.message ?? mailError;
     }
-  }
-
-  // 4. A password-set link the admin can forward if the invite email doesn't land.
-  let setupLink: string | null = null;
-  const link = await admin.auth.admin.generateLink({ type: 'recovery', email });
-  if (!link.error) {
-    setupLink = link.data.properties?.action_link ?? null;
+  } else if (existingUser) {
+    const reset = await admin.auth.resetPasswordForEmail(email);
+    invited = !reset.error;
+    mailError = reset.error?.message ?? null;
   }
 
   // 5. Upsert the hosts row.
@@ -122,6 +129,6 @@ Deno.serve(async (req) => {
   return json({
     host: { userId, name, isAdmin: false },
     invited,
-    setupLink,
+    mailError,
   });
 });

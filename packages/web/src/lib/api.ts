@@ -262,3 +262,8 @@ export async function invokeCreateHost(input: {
 }): Promise<CreateHostResult> {
   return invokeFn<CreateHostResult>('create-host', { name: input.name, email: input.email });
 }
+
+/** Admin only: remove a host account. Deletes the auth user, which cascades to their rows. */
+export async function invokeDeleteHost(userId: string): Promise<void> {
+  await invokeFn<{ ok: true }>('delete-host', { userId });
+}
