@@ -33,8 +33,8 @@ enabled = false
 
 [auth]
 enabled = true
-site_url = "http://localhost:5173"
-additional_redirect_urls = ["http://localhost:5173"]
+site_url = "http://localhost:5273"
+additional_redirect_urls = ["http://localhost:5273"]
 jwt_expiry = 3600
 # Local dev only. Public sign-up on the hosted project is controlled in the
 # Supabase dashboard; admin accounts are always created server-side.

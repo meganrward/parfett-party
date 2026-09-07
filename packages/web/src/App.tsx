@@ -16,15 +16,26 @@ import { supabase } from './lib/supabase';
 
 /**
  * Supabase's invite/recovery links land on the site root with tokens appended as a
- * URL fragment (`#access_token=...`), which the HashRouter can't parse as a route —
- * it 404s. supabase-js still picks the tokens up on load (`detectSessionInUrl`) and
- * fires this event once the session is established, so we redirect into the app.
+ * URL fragment (`#access_token=...&type=invite|recovery`), which the HashRouter
+ * can't parse as a route — it 404s (or, once a session exists, falls through to
+ * whatever route that garbage path happens to match, e.g. the party picker).
+ * supabase-js still picks the tokens up on load (`detectSessionInUrl`), but only
+ * `type=recovery` gets its own `PASSWORD_RECOVERY` event — an invite link fires the
+ * ordinary `SIGNED_IN` event, so we also check the raw hash for `type=invite`.
  */
 function useAuthRecoveryRedirect() {
   const navigate = useNavigate();
   useEffect(() => {
+    const isInviteOrRecoveryHash = () =>
+      /access_token=/.test(window.location.hash) &&
+      /type=(invite|recovery)/.test(window.location.hash);
+
+    if (isInviteOrRecoveryHash()) {
+      navigate('/admin/set-password', { replace: true });
+    }
+
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') {
+      if (event === 'PASSWORD_RECOVERY' || isInviteOrRecoveryHash()) {
         navigate('/admin/set-password', { replace: true });
       }
     });
