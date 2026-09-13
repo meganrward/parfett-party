@@ -255,7 +255,10 @@ export async function invokeGenerateQrCodes(
   });
 }
 
-/** Admin only: create a host account (name + email). Sends an invite / returns a setup link. */
+/**
+ * Admin only: create a host account (name + email) and send them a set-password
+ * email. Throws (and creates nothing) if the email can't be sent.
+ */
 export async function invokeCreateHost(input: {
   name: string;
   email: string;
@@ -266,4 +269,17 @@ export async function invokeCreateHost(input: {
 /** Admin only: remove a host account. Deletes the auth user, which cascades to their rows. */
 export async function invokeDeleteHost(userId: string): Promise<void> {
   await invokeFn<{ ok: true }>('delete-host', { userId });
+}
+
+/** Admin only: resend the set-password email to a host who hasn't set one yet. */
+export async function invokeResendHostInvite(userId: string): Promise<void> {
+  await invokeFn<{ ok: true }>('resend-host-invite', { userId });
+}
+
+/** Self-service: flip the signed-in host's own row from 'pending' to 'active'. */
+export async function activateOwnHost(): Promise<void> {
+  const { error } = await supabase.rpc('activate_own_host');
+  if (error) {
+    fail(error.message);
+  }
 }

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button, Masthead, Stack } from '@parfett/design-system';
 import { GuestCard, GuestLabel, GuestScreen, guestFieldStyle } from '../../components/guest';
 import { supabase } from '../../lib/supabase';
+import { activateOwnHost } from '../../lib/api';
 
 /**
  * Shown after following an invite/recovery email link. `useAuthRecoveryRedirect`
@@ -35,6 +36,11 @@ export function SetPassword() {
       const { error: updateErr } = await supabase.auth.updateUser({ password });
       if (updateErr) {
         throw new Error(updateErr.message);
+      }
+      try {
+        await activateOwnHost();
+      } catch {
+        // Non-critical: worst case they show as "pending" until an admin notices.
       }
       navigate('/admin', { replace: true });
     } catch (err) {

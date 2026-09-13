@@ -43,14 +43,12 @@ export interface HostRow {
   userId: string;
   name: string;
   isAdmin: boolean;
+  /** 'pending' until they follow the invite/recovery email and set a password */
+  status: 'pending' | 'active';
 }
 
 export interface CreateHostResult {
   host: HostRow;
-  /** true if Supabase sent a set-password email (invite or recovery) */
-  invited: boolean;
-  /** Supabase's error message when the set-password email failed to send */
-  mailError: string | null;
 }
 
 export interface QrCodeWithGuests {

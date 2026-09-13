@@ -59,18 +59,21 @@ export type Database = {
           created_at: string
           is_admin: boolean
           name: string
+          status: string
           user_id: string
         }
         Insert: {
           created_at?: string
           is_admin?: boolean
           name: string
+          status?: string
           user_id: string
         }
         Update: {
           created_at?: string
           is_admin?: boolean
           name?: string
+          status?: string
           user_id?: string
         }
         Relationships: []
@@ -190,6 +193,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      activate_own_host: { Args: never; Returns: undefined }
       add_guest: {
         Args: { p_name: string; p_status: string; p_token: string }
         Returns: string

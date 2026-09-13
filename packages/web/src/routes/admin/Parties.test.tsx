@@ -58,9 +58,9 @@ function renderParties() {
 beforeEach(() => {
   vi.clearAllMocks();
   vi.mocked(api.listHosts).mockResolvedValue([
-    { userId: 'u1', name: 'Housemate A', isAdmin: false },
-    { userId: 'u2', name: 'Housemate B', isAdmin: false },
-    { userId: 'setup', name: 'Party Setup', isAdmin: true },
+    { userId: 'u1', name: 'Housemate A', isAdmin: false, status: 'active' },
+    { userId: 'u2', name: 'Housemate B', isAdmin: false, status: 'active' },
+    { userId: 'setup', name: 'Party Setup', isAdmin: true, status: 'active' },
   ]);
   vi.mocked(api.listPartyHosts).mockResolvedValue(['u1']);
   vi.mocked(api.setPartyHosts).mockResolvedValue();

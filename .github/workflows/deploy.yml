@@ -37,6 +37,8 @@ jobs:
         run: |
           deno check supabase/functions/generate-qr-codes/index.ts
           deno check supabase/functions/create-host/index.ts
+          deno check supabase/functions/delete-host/index.ts
+          deno check supabase/functions/resend-host-invite/index.ts
 
   db-test:
     runs-on: ubuntu-latest

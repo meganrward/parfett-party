@@ -75,7 +75,6 @@ Deno.serve(async (req) => {
 
   // 3. Find or create the auth user.
   let userId: string | null = null;
-  let existingUser = false;
   for (let page = 1; page <= 20 && !userId; page += 1) {
     const { data, error } = await admin.auth.admin.listUsers({ page, perPage: 200 });
     if (error) {
@@ -84,7 +83,6 @@ Deno.serve(async (req) => {
     const found = data.users.find((u) => u.email?.toLowerCase() === email);
     if (found) {
       userId = found.id;
-      existingUser = true;
     }
     if (data.users.length < 200) {
       break;
@@ -92,10 +90,14 @@ Deno.serve(async (req) => {
   }
 
   // 4. Send a working "set your password" email. New users get Supabase's invite
-  // email; existing users (e.g. re-added after removal) get a recovery email.
-  // Both actually send mail, unlike generateLink which only returns a link.
+  // email; existing users (e.g. a previous attempt that failed after this point)
+  // get a recovery email. Both actually send mail, unlike generateLink which only
+  // returns a link. If we create a brand new auth user here but can't get them a
+  // working email, roll it back rather than leaving an orphaned, unreachable
+  // account — and don't create the hosts row either, in either failure case.
   let invited = false;
   let mailError: string | null = null;
+  let createdNewUser = false;
   if (!userId) {
     const invite = await admin.auth.admin.inviteUserByEmail(email);
     if (!invite.error && invite.data.user) {
@@ -108,27 +110,37 @@ Deno.serve(async (req) => {
         return json({ error: 'could not create the user', detail: created.error?.message }, 500);
       }
       userId = created.data.user.id;
+      createdNewUser = true;
       const reset = await admin.auth.resetPasswordForEmail(email);
       invited = !reset.error;
       mailError = reset.error?.message ?? mailError;
     }
-  } else if (existingUser) {
+  } else {
     const reset = await admin.auth.resetPasswordForEmail(email);
     invited = !reset.error;
     mailError = reset.error?.message ?? null;
   }
 
-  // 5. Upsert the hosts row.
+  if (!invited) {
+    if (createdNewUser && userId) {
+      await admin.auth.admin.deleteUser(userId);
+    }
+    const suffix = mailError ? `: ${mailError}` : '';
+    return json({ error: `could not send the invite email${suffix}` }, 502);
+  }
+
+  // 5. Upsert the hosts row. Pending until they follow the email and set a password.
   const { error: upsertErr } = await admin
     .from('hosts')
-    .upsert({ user_id: userId, name, is_admin: false }, { onConflict: 'user_id' });
+    .upsert(
+      { user_id: userId, name, is_admin: false, status: 'pending' },
+      { onConflict: 'user_id' },
+    );
   if (upsertErr) {
     return json({ error: 'failed to save the host', detail: upsertErr.message }, 500);
   }
 
   return json({
-    host: { userId, name, isAdmin: false },
-    invited,
-    mailError,
+    host: { userId, name, isAdmin: false, status: 'pending' },
   });
 });

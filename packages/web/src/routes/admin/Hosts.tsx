@@ -16,15 +16,20 @@ function HostRowItem({
   host,
   onRename,
   onRemove,
+  onResend,
 }: {
   host: HostRow;
   onRename: (name: string) => Promise<void>;
   onRemove: () => Promise<void>;
+  onResend: () => Promise<void>;
 }) {
   const [name, setName] = useState(host.name);
   const [saving, setSaving] = useState(false);
   const [removing, setRemoving] = useState(false);
   const [removeError, setRemoveError] = useState<string | null>(null);
+  const [resending, setResending] = useState(false);
+  const [resendError, setResendError] = useState<string | null>(null);
+  const [resent, setResent] = useState(false);
 
   const commit = async () => {
     const next = name.trim();
@@ -54,6 +59,23 @@ function HostRowItem({
     }
   };
 
+  const resend = async () => {
+    if (resending) {
+      return;
+    }
+    setResending(true);
+    setResendError(null);
+    setResent(false);
+    try {
+      await onResend();
+      setResent(true);
+    } catch (err) {
+      setResendError(err instanceof Error ? err.message : 'Could not resend the invite');
+    } finally {
+      setResending(false);
+    }
+  };
+
   return (
     <Card padding={4}>
       <Stack direction="row" gap={3} align="center" justify="space-between" wrap>
@@ -74,13 +96,28 @@ function HostRowItem({
               {removeError}
             </span>
           ) : null}
-          {host.isAdmin ? (
-            <StatusPill tone="warning">Admin</StatusPill>
-          ) : (
+          {resendError ? (
+            <span style={{ color: 'var(--pf-color-danger)', fontSize: 'var(--pf-font-size-sm)' }}>
+              {resendError}
+            </span>
+          ) : null}
+          {resent ? (
+            <span style={{ ...muted, fontSize: 'var(--pf-font-size-sm)' }}>Invite resent</span>
+          ) : null}
+          {host.status === 'pending' ? (
+            <>
+              <StatusPill tone="warning">Pending</StatusPill>
+              <Button size="sm" variant="ghost" disabled={resending} onClick={() => void resend()}>
+                {resending ? 'Resending…' : 'Resend email'}
+              </Button>
+            </>
+          ) : null}
+          {host.isAdmin ? <StatusPill tone="warning">Admin</StatusPill> : null}
+          {!host.isAdmin ? (
             <Button size="sm" variant="ghost" disabled={removing} onClick={() => void remove()}>
               {removing ? 'Removing…' : 'Remove'}
             </Button>
-          )}
+          ) : null}
         </Stack>
       </Stack>
     </Card>
@@ -92,7 +129,7 @@ function NewHostForm({ onCreated }: { onCreated: (host: HostRow) => void }) {
   const [email, setEmail] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<{ invited: boolean; mailError: string | null } | null>(null);
+  const [created, setCreated] = useState(false);
 
   const submit = async () => {
     if (busy) {
@@ -100,11 +137,11 @@ function NewHostForm({ onCreated }: { onCreated: (host: HostRow) => void }) {
     }
     setBusy(true);
     setError(null);
-    setResult(null);
+    setCreated(false);
     try {
       const res = await api.invokeCreateHost({ name: name.trim(), email: email.trim() });
       onCreated(res.host);
-      setResult({ invited: res.invited, mailError: res.mailError });
+      setCreated(true);
       setName('');
       setEmail('');
     } catch (err) {
@@ -149,16 +186,11 @@ function NewHostForm({ onCreated }: { onCreated: (host: HostRow) => void }) {
             </div>
           ) : null}
 
-          {result ? (
-            <div style={panel(result.invited ? 'ok' : 'bad')}>
+          {created ? (
+            <div style={panel('ok')}>
               <Stack gap={2}>
-                <span>
-                  {result.invited
-                    ? 'Invite email sent — they can follow the link to set a password.'
-                    : "Host added, but the set-password email couldn't be sent."}
-                </span>
-                {result.mailError ? <span style={muted}>{result.mailError}</span> : null}
-                <Button size="sm" variant="ghost" onClick={() => setResult(null)}>
+                <span>Invite email sent — they can follow the link to set a password.</span>
+                <Button size="sm" variant="ghost" onClick={() => setCreated(false)}>
                   Done
                 </Button>
               </Stack>
@@ -204,6 +236,10 @@ export function Hosts() {
     setHosts((prev) => prev.filter((h) => h.userId !== host.userId));
   };
 
+  const resend = async (host: HostRow) => {
+    await api.invokeResendHostInvite(host.userId);
+  };
+
   return (
     <main style={{ maxWidth: 1040, margin: '0 auto', padding: 'var(--pf-space-5)' }}>
       <div
@@ -238,6 +274,7 @@ export function Hosts() {
                 host={host}
                 onRename={(name) => rename(host, name)}
                 onRemove={() => remove(host)}
+                onResend={() => resend(host)}
               />
             ))}
           </Stack>

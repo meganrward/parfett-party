@@ -56,6 +56,7 @@ const { state, mockSupabase } = vi.hoisted(() => {
 vi.mock('./supabase', () => ({ supabase: mockSupabase }));
 
 import {
+  activateOwnHost,
   addGuest,
   createParty,
   deleteGuest,
@@ -63,7 +64,9 @@ import {
   getPartyBySlug,
   getQr,
   invokeCreateHost,
+  invokeDeleteHost,
   invokeGenerateQrCodes,
+  invokeResendHostInvite,
   listHosts,
   listGuests,
   listMyParties,
@@ -229,11 +232,13 @@ describe('party reads', () => {
   it('listHosts maps rows and throws on error', async () => {
     state.fromResults = [
       {
-        data: [{ user_id: 'u1', name: 'Meg', is_admin: true, created_at: 't' }],
+        data: [{ user_id: 'u1', name: 'Meg', is_admin: true, status: 'active', created_at: 't' }],
         error: null,
       },
     ];
-    await expect(listHosts()).resolves.toEqual([{ userId: 'u1', name: 'Meg', isAdmin: true }]);
+    await expect(listHosts()).resolves.toEqual([
+      { userId: 'u1', name: 'Meg', isAdmin: true, status: 'active' },
+    ]);
     state.fromResults = [{ data: null, error: { message: 'denied' } }];
     await expect(listHosts()).rejects.toThrow('denied');
   });
@@ -291,7 +296,7 @@ describe('party + guest + admin writes', () => {
   it('getHost returns the mapped row or null', async () => {
     state.fromResults = [
       {
-        data: { user_id: 'u1', name: 'Meg', is_admin: true, created_at: 't' },
+        data: { user_id: 'u1', name: 'Meg', is_admin: true, status: 'active', created_at: 't' },
         error: null,
       },
     ];
@@ -299,6 +304,7 @@ describe('party + guest + admin writes', () => {
       userId: 'u1',
       name: 'Meg',
       isAdmin: true,
+      status: 'active',
     });
     state.fromResults = [{ data: null, error: null }];
     await expect(getHost('u2')).resolves.toBeNull();
@@ -381,16 +387,57 @@ describe('invokeGenerateQrCodes', () => {
 describe('invokeCreateHost', () => {
   it('posts name + email and returns the result', async () => {
     state.invokeResult = {
-      data: { host: { userId: 'u9', name: 'Kit', isAdmin: false }, invited: true, setupLink: null },
+      data: { host: { userId: 'u9', name: 'Kit', isAdmin: false, status: 'pending' } },
       error: null,
     };
     const res = await invokeCreateHost({ name: 'Kit', email: 'kit@example.com' });
-    expect(res.host).toEqual({ userId: 'u9', name: 'Kit', isAdmin: false });
-    expect(res.invited).toBe(true);
+    expect(res.host).toEqual({ userId: 'u9', name: 'Kit', isAdmin: false, status: 'pending' });
     expect(state.calls[0]).toEqual([
       'invoke',
       'create-host',
       { body: { name: 'Kit', email: 'kit@example.com' } },
     ]);
+  });
+
+  it('throws and creates nothing when the email fails to send', async () => {
+    state.invokeResult = {
+      data: null,
+      error: {
+        message: 'Edge Function returned a non-2xx status code',
+        context: { json: async () => ({ error: 'could not send the invite email: rate limited' }) },
+      },
+    };
+    await expect(invokeCreateHost({ name: 'Kit', email: 'kit@example.com' })).rejects.toThrow(
+      'could not send the invite email: rate limited',
+    );
+  });
+});
+
+describe('invokeDeleteHost', () => {
+  it('posts the userId', async () => {
+    state.invokeResult = { data: { ok: true }, error: null };
+    await invokeDeleteHost('u9');
+    expect(state.calls[0]).toEqual(['invoke', 'delete-host', { body: { userId: 'u9' } }]);
+  });
+});
+
+describe('invokeResendHostInvite', () => {
+  it('posts the userId', async () => {
+    state.invokeResult = { data: { ok: true }, error: null };
+    await invokeResendHostInvite('u9');
+    expect(state.calls[0]).toEqual(['invoke', 'resend-host-invite', { body: { userId: 'u9' } }]);
+  });
+});
+
+describe('activateOwnHost', () => {
+  it('calls the activate_own_host RPC', async () => {
+    state.rpcResult = { data: null, error: null };
+    await activateOwnHost();
+    expect(state.calls[0]).toEqual(['rpc', 'activate_own_host', undefined]);
+  });
+
+  it('throws on error', async () => {
+    state.rpcResult = { data: null, error: { message: 'nope' } };
+    await expect(activateOwnHost()).rejects.toThrow('nope');
   });
 });

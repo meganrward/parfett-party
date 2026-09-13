@@ -89,6 +89,7 @@ export function mapHost(row: HostTableRow): HostRow {
     userId: row.user_id,
     name: row.name,
     isAdmin: row.is_admin,
+    status: row.status === 'pending' ? 'pending' : 'active',
   };
 }
 

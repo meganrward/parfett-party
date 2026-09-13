@@ -7,6 +7,7 @@ vi.mock('../../lib/api', () => ({
   upsertHost: vi.fn(),
   invokeCreateHost: vi.fn(),
   invokeDeleteHost: vi.fn(),
+  invokeResendHostInvite: vi.fn(),
 }));
 
 import * as api from '../../lib/api';
@@ -15,11 +16,12 @@ import { Hosts } from './Hosts';
 beforeEach(() => {
   vi.clearAllMocks();
   vi.mocked(api.listHosts).mockResolvedValue([
-    { userId: 'setup', name: 'Party Admin', isAdmin: true },
-    { userId: 'u1', name: 'Host A', isAdmin: false },
+    { userId: 'setup', name: 'Party Admin', isAdmin: true, status: 'active' },
+    { userId: 'u1', name: 'Host A', isAdmin: false, status: 'active' },
   ]);
   vi.mocked(api.upsertHost).mockResolvedValue();
   vi.mocked(api.invokeDeleteHost).mockResolvedValue();
+  vi.mocked(api.invokeResendHostInvite).mockResolvedValue();
 });
 
 describe('Hosts', () => {
@@ -28,6 +30,7 @@ describe('Hosts', () => {
     expect(await screen.findByDisplayValue('Party Admin')).toBeInTheDocument();
     expect(screen.getByDisplayValue('Host A')).toBeInTheDocument();
     expect(screen.getByText('Admin')).toBeInTheDocument();
+    expect(screen.queryByText('Pending')).not.toBeInTheDocument();
   });
 
   it('renames an account on blur', async () => {
@@ -57,9 +60,7 @@ describe('Hosts', () => {
 
   it('creates a host and reports the invite', async () => {
     vi.mocked(api.invokeCreateHost).mockResolvedValue({
-      host: { userId: 'u9', name: 'Kit', isAdmin: false },
-      invited: true,
-      mailError: null,
+      host: { userId: 'u9', name: 'Kit', isAdmin: false, status: 'pending' },
     });
     render(<Hosts />);
     const form = (await screen.findByRole('heading', { name: /new host/i })).closest('form')!;
@@ -72,20 +73,29 @@ describe('Hosts', () => {
     expect(screen.getByDisplayValue('Kit')).toBeInTheDocument();
   });
 
-  it('reports a failure to send the set-password email', async () => {
-    vi.mocked(api.invokeCreateHost).mockResolvedValue({
-      host: { userId: 'u9', name: 'Kit', isAdmin: false },
-      invited: false,
-      mailError: 'Email rate limit exceeded',
-    });
+  it('does not add the host when the invite email fails to send', async () => {
+    vi.mocked(api.invokeCreateHost).mockRejectedValue(
+      new Error('could not send the invite email: rate limited'),
+    );
     render(<Hosts />);
     const form = (await screen.findByRole('heading', { name: /new host/i })).closest('form')!;
+    const namesBefore = screen.getAllByLabelText('Name').length;
     await userEvent.type(within(form).getByLabelText('Name'), 'Kit');
     await userEvent.type(within(form).getByLabelText('Email'), 'kit@example.com');
     await userEvent.click(within(form).getByRole('button', { name: /add host/i }));
 
-    expect(await within(form).findByText(/couldn't be sent/i)).toBeInTheDocument();
-    expect(within(form).getByText('Email rate limit exceeded')).toBeInTheDocument();
+    expect(await within(form).findByText(/rate limited/i)).toBeInTheDocument();
+    expect(screen.getAllByLabelText('Name')).toHaveLength(namesBefore);
+  });
+
+  it('surfaces a create error', async () => {
+    vi.mocked(api.invokeCreateHost).mockRejectedValue(new Error('a valid email is required'));
+    render(<Hosts />);
+    const form = (await screen.findByRole('heading', { name: /new host/i })).closest('form')!;
+    await userEvent.type(within(form).getByLabelText('Name'), 'Kit');
+    await userEvent.type(within(form).getByLabelText('Email'), 'nope');
+    await userEvent.click(within(form).getByRole('button', { name: /add host/i }));
+    expect(await within(form).findByText(/a valid email is required/i)).toBeInTheDocument();
   });
 
   it('removes a host after confirming', async () => {
@@ -114,13 +124,38 @@ describe('Hosts', () => {
     expect(screen.getAllByRole('button', { name: /remove/i })).toHaveLength(1);
   });
 
-  it('surfaces a create error', async () => {
-    vi.mocked(api.invokeCreateHost).mockRejectedValue(new Error('a valid email is required'));
-    render(<Hosts />);
-    const form = (await screen.findByRole('heading', { name: /new host/i })).closest('form')!;
-    await userEvent.type(within(form).getByLabelText('Name'), 'Kit');
-    await userEvent.type(within(form).getByLabelText('Email'), 'nope');
-    await userEvent.click(within(form).getByRole('button', { name: /add host/i }));
-    expect(await within(form).findByText(/a valid email is required/i)).toBeInTheDocument();
+  describe('pending hosts', () => {
+    beforeEach(() => {
+      vi.mocked(api.listHosts).mockResolvedValue([
+        { userId: 'setup', name: 'Party Admin', isAdmin: true, status: 'active' },
+        { userId: 'u1', name: 'Host A', isAdmin: false, status: 'active' },
+        { userId: 'u2', name: 'Invited Guy', isAdmin: false, status: 'pending' },
+      ]);
+    });
+
+    it('shows a pending label and a resend button', async () => {
+      render(<Hosts />);
+      await screen.findByDisplayValue('Invited Guy');
+      expect(screen.getByText('Pending')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /resend email/i })).toBeInTheDocument();
+    });
+
+    it('resends the invite', async () => {
+      render(<Hosts />);
+      await screen.findByDisplayValue('Invited Guy');
+      await userEvent.click(screen.getByRole('button', { name: /resend email/i }));
+
+      expect(api.invokeResendHostInvite).toHaveBeenCalledWith('u2');
+      expect(await screen.findByText(/invite resent/i)).toBeInTheDocument();
+    });
+
+    it('surfaces a resend failure', async () => {
+      vi.mocked(api.invokeResendHostInvite).mockRejectedValue(new Error('rate limited'));
+      render(<Hosts />);
+      await screen.findByDisplayValue('Invited Guy');
+      await userEvent.click(screen.getByRole('button', { name: /resend email/i }));
+
+      expect(await screen.findByText('rate limited')).toBeInTheDocument();
+    });
   });
 });

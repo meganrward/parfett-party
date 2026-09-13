@@ -108,11 +108,25 @@ describe('mapParty', () => {
 
 describe('mapHost', () => {
   it('camelCases', () => {
-    expect(mapHost({ user_id: 'u1', name: 'Meg', is_admin: true, created_at: 't' })).toEqual({
+    expect(
+      mapHost({ user_id: 'u1', name: 'Meg', is_admin: true, status: 'active', created_at: 't' }),
+    ).toEqual({
       userId: 'u1',
       name: 'Meg',
       isAdmin: true,
+      status: 'active',
     });
+  });
+
+  it('treats any non-pending status as active', () => {
+    expect(
+      mapHost({ user_id: 'u2', name: 'Kit', is_admin: false, status: 'pending', created_at: 't' })
+        .status,
+    ).toBe('pending');
+    expect(
+      mapHost({ user_id: 'u3', name: 'Sam', is_admin: false, status: 'weird', created_at: 't' })
+        .status,
+    ).toBe('active');
   });
 });
 

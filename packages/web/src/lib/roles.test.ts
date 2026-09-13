@@ -38,8 +38,8 @@ beforeEach(() => {
 describe('adminRole', () => {
   it('maps a row to admin / host, and null to null', () => {
     expect(adminRole(null)).toBeNull();
-    expect(adminRole({ userId: 'u', name: 'x', isAdmin: true })).toBe('admin');
-    expect(adminRole({ userId: 'u', name: 'x', isAdmin: false })).toBe('host');
+    expect(adminRole({ userId: 'u', name: 'x', isAdmin: true, status: 'active' })).toBe('admin');
+    expect(adminRole({ userId: 'u', name: 'x', isAdmin: false, status: 'active' })).toBe('host');
   });
 });
 
@@ -70,7 +70,12 @@ describe('useAdminRole', () => {
 
   it('resolves admin for an is_admin row', async () => {
     auth.session = sessionFor('u1');
-    vi.mocked(getHost).mockResolvedValue({ userId: 'u1', name: 'Meg', isAdmin: true });
+    vi.mocked(getHost).mockResolvedValue({
+      userId: 'u1',
+      name: 'Meg',
+      isAdmin: true,
+      status: 'active',
+    });
 
     const { result } = renderHook(() => useAdminRole());
     await waitFor(() => expect(result.current.loading).toBe(false));
@@ -82,7 +87,12 @@ describe('useAdminRole', () => {
 
   it('resolves host for a non-admin row and null for no row', async () => {
     auth.session = sessionFor('u2');
-    vi.mocked(getHost).mockResolvedValueOnce({ userId: 'u2', name: 'H', isAdmin: false });
+    vi.mocked(getHost).mockResolvedValueOnce({
+      userId: 'u2',
+      name: 'H',
+      isAdmin: false,
+      status: 'active',
+    });
     const first = renderHook(() => useAdminRole());
     await waitFor(() => expect(first.result.current.loading).toBe(false));
     expect(first.result.current.role).toBe('host');
