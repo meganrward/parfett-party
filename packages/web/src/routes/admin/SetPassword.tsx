@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Masthead, Stack } from '@parfett/design-system';
-import { GuestCard, GuestLabel, GuestScreen, guestFieldStyle } from '../../components/guest';
+import { Button, Card, Heading, Stack, TextInput } from '@parfett/design-system';
 import { supabase } from '../../lib/supabase';
 import { activateOwnHost } from '../../lib/api';
 
@@ -50,8 +49,8 @@ export function SetPassword() {
   };
 
   return (
-    <GuestScreen contentStyle={{ justifyContent: 'flex-start', paddingTop: 'var(--pf-space-6)' }}>
-      <GuestCard elevated>
+    <main style={{ maxWidth: 400, margin: '0 auto', padding: 'var(--pf-space-5)' }}>
+      <Card padding={5}>
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -59,39 +58,30 @@ export function SetPassword() {
           }}
         >
           <Stack gap={4}>
-            <Masthead eyebrow="Hosts only" wordmark="Set your password" wordmarkSize={32} />
-            <label className="pf-field" style={guestFieldStyle}>
-              <GuestLabel>New password</GuestLabel>
-              <input
-                className="pf-input"
-                type="password"
-                autoComplete="new-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </label>
-            <label className="pf-field" style={guestFieldStyle}>
-              <GuestLabel>Confirm password</GuestLabel>
-              <input
-                className="pf-input"
-                type="password"
-                autoComplete="new-password"
-                value={confirm}
-                onChange={(e) => setConfirm(e.target.value)}
-                required
-                style={error ? { borderColor: 'var(--pf-guest-danger)' } : undefined}
-              />
-            </label>
-            {error ? (
-              <span style={{ color: 'var(--pf-guest-danger)', fontSize: 16 }}>{error}</span>
-            ) : null}
-            <Button type="submit" size="mobile" disabled={busy}>
+            <Heading level={1}>Set your password</Heading>
+            <TextInput
+              label="New password"
+              type="password"
+              autoComplete="new-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+            <TextInput
+              label="Confirm password"
+              type="password"
+              autoComplete="new-password"
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+              required
+              error={error ?? undefined}
+            />
+            <Button type="submit" disabled={busy}>
               {busy ? 'Saving…' : 'Set password'}
             </Button>
           </Stack>
         </form>
-      </GuestCard>
-    </GuestScreen>
+      </Card>
+    </main>
   );
 }

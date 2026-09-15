@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link, Outlet } from 'react-router-dom';
-import { Button, Heading, Stack } from '@parfett/design-system';
-import { GuestCard, GuestScreen, guestHeadingStyle } from '../../components/guest';
+import { Button, Card, Heading, Stack } from '@parfett/design-system';
 import { useAdminRole, useSession } from '../../lib/roles';
 import { signOut } from '../../lib/auth';
 import { Login } from './Login';
@@ -50,36 +49,24 @@ export function AdminLayout() {
   }
   if (roleLoading) {
     return (
-      <GuestScreen contentStyle={{ justifyContent: 'flex-start', paddingTop: 'var(--pf-space-6)' }}>
-        <GuestCard>
-          <p style={{ margin: 0, fontSize: 16, color: 'var(--pf-guest-muted)' }}>
-            Checking access…
-          </p>
-        </GuestCard>
-      </GuestScreen>
+      <main style={{ maxWidth: 400, margin: '0 auto', padding: 'var(--pf-space-5)' }}>
+        <Card padding={5}>
+          <p style={{ margin: 0, color: 'var(--pf-color-text-muted)' }}>Checking access…</p>
+        </Card>
+      </main>
     );
   }
   if (!role) {
     return (
-      <GuestScreen contentStyle={{ justifyContent: 'flex-start', paddingTop: 'var(--pf-space-6)' }}>
-        <div
-          style={{
-            background: 'var(--pf-guest-sand-tint)',
-            border: '1px solid var(--pf-guest-sand)',
-            borderRadius: 'var(--pf-radius-lg)',
-            padding: '22px 20px',
-          }}
-        >
+      <main style={{ maxWidth: 400, margin: '0 auto', padding: 'var(--pf-space-5)' }}>
+        <Card padding={5}>
           <Stack gap={3}>
-            <Heading level={2} style={{ ...guestHeadingStyle, fontSize: 24 }}>
-              No access
-            </Heading>
+            <Heading level={2}>No access</Heading>
             <p
               style={{
                 margin: 0,
-                fontSize: 16,
                 lineHeight: 1.55,
-                color: 'var(--pf-guest-muted)',
+                color: 'var(--pf-color-text-muted)',
                 textWrap: 'pretty',
               }}
             >
@@ -89,8 +76,8 @@ export function AdminLayout() {
               <SignOutButton />
             </div>
           </Stack>
-        </div>
-      </GuestScreen>
+        </Card>
+      </main>
     );
   }
 
