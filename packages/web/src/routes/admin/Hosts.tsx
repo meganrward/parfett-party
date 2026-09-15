@@ -124,12 +124,60 @@ function HostRowItem({
   );
 }
 
+const NEW_HOST_DRAFT_KEY = 'pf-admin-new-host-draft';
+
+interface NewHostDraft {
+  name: string;
+  email: string;
+}
+
+function readNewHostDraft(): NewHostDraft {
+  try {
+    const raw = sessionStorage.getItem(NEW_HOST_DRAFT_KEY);
+    if (!raw) {
+      return { name: '', email: '' };
+    }
+    const parsed = JSON.parse(raw) as Partial<NewHostDraft>;
+    return { name: parsed.name ?? '', email: parsed.email ?? '' };
+  } catch {
+    return { name: '', email: '' };
+  }
+}
+
+function writeNewHostDraft(draft: NewHostDraft) {
+  try {
+    sessionStorage.setItem(NEW_HOST_DRAFT_KEY, JSON.stringify(draft));
+  } catch {
+    // sessionStorage unavailable (private mode, etc.) — draft just won't persist.
+  }
+}
+
+function clearNewHostDraft() {
+  try {
+    sessionStorage.removeItem(NEW_HOST_DRAFT_KEY);
+  } catch {
+    // ignore
+  }
+}
+
 function NewHostForm({ onCreated }: { onCreated: (host: HostRow) => void }) {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const [{ name, email }, setDraft] = useState<NewHostDraft>(readNewHostDraft);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [created, setCreated] = useState(false);
+
+  const setName = (next: string) =>
+    setDraft((prev) => {
+      const draft = { ...prev, name: next };
+      writeNewHostDraft(draft);
+      return draft;
+    });
+  const setEmail = (next: string) =>
+    setDraft((prev) => {
+      const draft = { ...prev, email: next };
+      writeNewHostDraft(draft);
+      return draft;
+    });
 
   const submit = async () => {
     if (busy) {
@@ -142,8 +190,8 @@ function NewHostForm({ onCreated }: { onCreated: (host: HostRow) => void }) {
       const res = await api.invokeCreateHost({ name: name.trim(), email: email.trim() });
       onCreated(res.host);
       setCreated(true);
-      setName('');
-      setEmail('');
+      setDraft({ name: '', email: '' });
+      clearNewHostDraft();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not create the host');
     } finally {

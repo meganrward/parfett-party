@@ -62,11 +62,11 @@ Deno.serve(async (req) => {
   const admin = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
 
   const { data: adminRow } = await admin
-    .from('admins')
-    .select('is_super')
+    .from('hosts')
+    .select('is_admin')
     .eq('user_id', caller.user.id)
     .maybeSingle();
-  if (!adminRow?.is_super) {
+  if (!adminRow?.is_admin) {
     return json({ error: 'forbidden: super-admin only' }, 403);
   }
 

@@ -15,6 +15,7 @@ import { Hosts } from './Hosts';
 
 beforeEach(() => {
   vi.clearAllMocks();
+  sessionStorage.clear();
   vi.mocked(api.listHosts).mockResolvedValue([
     { userId: 'setup', name: 'Party Admin', isAdmin: true, status: 'active' },
     { userId: 'u1', name: 'Host A', isAdmin: false, status: 'active' },
@@ -71,6 +72,19 @@ describe('Hosts', () => {
     expect(api.invokeCreateHost).toHaveBeenCalledWith({ name: 'Kit', email: 'kit@example.com' });
     expect(await within(form).findByText(/invite email sent/i)).toBeInTheDocument();
     expect(screen.getByDisplayValue('Kit')).toBeInTheDocument();
+  });
+
+  it('keeps the new host draft when the page remounts', async () => {
+    const { unmount } = render(<Hosts />);
+    const form = (await screen.findByRole('heading', { name: /new host/i })).closest('form')!;
+    await userEvent.type(within(form).getByLabelText('Name'), 'Kit');
+    await userEvent.type(within(form).getByLabelText('Email'), 'kit@example.com');
+    unmount();
+
+    render(<Hosts />);
+    const nextForm = (await screen.findByRole('heading', { name: /new host/i })).closest('form')!;
+    expect(within(nextForm).getByLabelText('Name')).toHaveValue('Kit');
+    expect(within(nextForm).getByLabelText('Email')).toHaveValue('kit@example.com');
   });
 
   it('does not add the host when the invite email fails to send', async () => {
