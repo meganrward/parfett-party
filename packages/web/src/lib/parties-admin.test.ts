@@ -3,9 +3,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   BLANK_PARTY_FORM,
   DEFAULT_ALPHABET,
+  clearNewPartyDraft,
   fromDatetimeLocal,
+  loadNewPartyDraft,
   parsePrefixes,
   partyToForm,
+  saveNewPartyDraft,
   toDatetimeLocal,
   validatePartyForm,
 } from './parties-admin';
@@ -117,6 +120,36 @@ describe('partyToForm', () => {
       prefixes: 'J, K',
       tokenLength: '12',
     });
+  });
+});
+
+describe('new-party draft persistence', () => {
+  beforeEach(() => localStorage.clear());
+
+  it('returns a blank form when nothing has been saved', () => {
+    expect(loadNewPartyDraft()).toEqual(BLANK_PARTY_FORM);
+  });
+
+  it('round-trips a saved draft', () => {
+    const draft = { ...BLANK_PARTY_FORM, name: 'Halloween', slug: 'halloween' };
+    saveNewPartyDraft(draft);
+    expect(loadNewPartyDraft()).toEqual(draft);
+  });
+
+  it('falls back to blank when the stored value is corrupt', () => {
+    localStorage.setItem('parfett:newPartyDraft', '{not json');
+    expect(loadNewPartyDraft()).toEqual(BLANK_PARTY_FORM);
+  });
+
+  it('backfills missing fields from an older/partial draft shape', () => {
+    localStorage.setItem('parfett:newPartyDraft', JSON.stringify({ name: 'Partial' }));
+    expect(loadNewPartyDraft()).toEqual({ ...BLANK_PARTY_FORM, name: 'Partial' });
+  });
+
+  it('clears the draft', () => {
+    saveNewPartyDraft({ ...BLANK_PARTY_FORM, name: 'Halloween' });
+    clearNewPartyDraft();
+    expect(loadNewPartyDraft()).toEqual(BLANK_PARTY_FORM);
   });
 });
 

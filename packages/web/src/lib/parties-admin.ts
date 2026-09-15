@@ -147,6 +147,41 @@ export function validatePartyForm(form: PartyForm): PartyFormResult {
 }
 
 // ---------------------------------------------------------------------------
+// New-party draft persistence
+// ---------------------------------------------------------------------------
+
+const NEW_PARTY_DRAFT_KEY = 'parfett:newPartyDraft';
+
+/** Restores an in-progress "new party" draft so it survives navigating away and back. */
+export function loadNewPartyDraft(): PartyForm {
+  try {
+    const raw = localStorage.getItem(NEW_PARTY_DRAFT_KEY);
+    if (!raw) {
+      return BLANK_PARTY_FORM;
+    }
+    return { ...BLANK_PARTY_FORM, ...(JSON.parse(raw) as Partial<PartyForm>) };
+  } catch {
+    return BLANK_PARTY_FORM;
+  }
+}
+
+export function saveNewPartyDraft(form: PartyForm): void {
+  try {
+    localStorage.setItem(NEW_PARTY_DRAFT_KEY, JSON.stringify(form));
+  } catch {
+    // best-effort — draft persistence is a convenience, not a requirement
+  }
+}
+
+export function clearNewPartyDraft(): void {
+  try {
+    localStorage.removeItem(NEW_PARTY_DRAFT_KEY);
+  } catch {
+    // ignore
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Data hook
 // ---------------------------------------------------------------------------
 

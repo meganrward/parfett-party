@@ -24,12 +24,12 @@ npm run db:stop
 Once started, the CLI prints local URLs and keys. The ones already wired up in
 `.env.local` files (see below) are:
 
-| service          | URL                             |
-| ---------------- | -------------------------------- |
-| API              | http://127.0.0.1:54321          |
-| DB               | postgres://127.0.0.1:54322       |
-| Studio           | http://127.0.0.1:54323          |
-| Inbucket (mail)  | http://127.0.0.1:54324          |
+| service         | URL                        |
+| --------------- | -------------------------- |
+| API             | http://127.0.0.1:54321     |
+| DB              | postgres://127.0.0.1:54322 |
+| Studio          | http://127.0.0.1:54323     |
+| Inbucket (mail) | http://127.0.0.1:54324     |
 
 ### Mailbox (Inbucket)
 

@@ -3,7 +3,10 @@ import { Link } from 'react-router-dom';
 import { Button, Card, Checkbox, Heading, Stack, TextInput } from '@parfett/design-system';
 import {
   BLANK_PARTY_FORM,
+  clearNewPartyDraft,
+  loadNewPartyDraft,
   partyToForm,
+  saveNewPartyDraft,
   useSuperParties,
   validatePartyForm,
   type PartyForm,
@@ -65,16 +68,22 @@ function PartyEditor({
   party: Party | null;
   onSave: (values: PartyInput, party: Party | null) => Promise<Party>;
 }) {
-  const [form, setForm] = useState<PartyForm>(party ? partyToForm(party) : BLANK_PARTY_FORM);
+  const [form, setForm] = useState<PartyForm>(party ? partyToForm(party) : loadNewPartyDraft());
   const [errors, setErrors] = useState<Partial<Record<keyof PartyForm, string>>>({});
   const [busy, setBusy] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
   useEffect(() => {
-    setForm(party ? partyToForm(party) : BLANK_PARTY_FORM);
+    setForm(party ? partyToForm(party) : loadNewPartyDraft());
     setErrors({});
     setSaveError(null);
   }, [party]);
+
+  useEffect(() => {
+    if (!party) {
+      saveNewPartyDraft(form);
+    }
+  }, [party, form]);
 
   const set = <K extends keyof PartyForm>(key: K, value: PartyForm[K]) =>
     setForm((f) => ({ ...f, [key]: value }));
@@ -98,6 +107,9 @@ function PartyEditor({
     setSaveError(null);
     try {
       await onSave(values, party);
+      if (!party) {
+        clearNewPartyDraft();
+      }
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : 'Could not save the party');
     } finally {
@@ -135,12 +147,25 @@ function PartyEditor({
               <input
                 type="datetime-local"
                 value={form.eventStartLocal}
-                onChange={(e) => set('eventStartLocal', e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setForm((f) => {
+                    const endTracksStart =
+                      !f.eventEndLocal || f.eventEndLocal === f.eventStartLocal;
+                    return {
+                      ...f,
+                      eventStartLocal: value,
+                      eventEndLocal:
+                        endTracksStart || f.eventEndLocal < value ? value : f.eventEndLocal,
+                    };
+                  });
+                }}
               />
             </Field>
             <Field label="Ends" error={errors.eventEndLocal}>
               <input
                 type="datetime-local"
+                min={form.eventStartLocal || undefined}
                 value={form.eventEndLocal}
                 onChange={(e) => set('eventEndLocal', e.target.value)}
               />
@@ -221,7 +246,12 @@ function PartyEditor({
                 type="button"
                 variant="ghost"
                 disabled={busy}
-                onClick={() => setForm(party ? partyToForm(party) : BLANK_PARTY_FORM)}
+                onClick={() => {
+                  if (!party) {
+                    clearNewPartyDraft();
+                  }
+                  setForm(party ? partyToForm(party) : BLANK_PARTY_FORM);
+                }}
               >
                 Discard
               </Button>
