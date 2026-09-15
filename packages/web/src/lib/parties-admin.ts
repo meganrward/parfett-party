@@ -181,6 +181,14 @@ export function clearNewPartyDraft(): void {
   }
 }
 
+/** True when there's an unsaved "new party" draft worth returning to. */
+export function hasNewPartyDraft(): boolean {
+  const draft = loadNewPartyDraft();
+  return (Object.keys(draft) as (keyof PartyForm)[]).some(
+    (key) => draft[key] !== BLANK_PARTY_FORM[key],
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Data hook
 // ---------------------------------------------------------------------------

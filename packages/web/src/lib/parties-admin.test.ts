@@ -5,6 +5,7 @@ import {
   DEFAULT_ALPHABET,
   clearNewPartyDraft,
   fromDatetimeLocal,
+  hasNewPartyDraft,
   loadNewPartyDraft,
   parsePrefixes,
   partyToForm,
@@ -150,6 +151,14 @@ describe('new-party draft persistence', () => {
     saveNewPartyDraft({ ...BLANK_PARTY_FORM, name: 'Halloween' });
     clearNewPartyDraft();
     expect(loadNewPartyDraft()).toEqual(BLANK_PARTY_FORM);
+  });
+
+  it('reports whether there is a draft worth returning to', () => {
+    expect(hasNewPartyDraft()).toBe(false);
+    saveNewPartyDraft({ ...BLANK_PARTY_FORM, name: 'Halloween' });
+    expect(hasNewPartyDraft()).toBe(true);
+    clearNewPartyDraft();
+    expect(hasNewPartyDraft()).toBe(false);
   });
 });
 

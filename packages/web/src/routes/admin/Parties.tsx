@@ -4,6 +4,7 @@ import { Button, Card, Checkbox, Heading, Stack, TextInput } from '@parfett/desi
 import {
   BLANK_PARTY_FORM,
   clearNewPartyDraft,
+  hasNewPartyDraft,
   loadNewPartyDraft,
   partyToForm,
   saveNewPartyDraft,
@@ -560,7 +561,9 @@ function DetailEmpty({ onNew }: { onNew: () => void }) {
 
 export function Parties() {
   const { parties, loading, error, reload, create, update } = useSuperParties();
-  const [selection, setSelection] = useState<string | 'new' | null>(null);
+  const [selection, setSelection] = useState<string | 'new' | null>(() =>
+    hasNewPartyDraft() ? 'new' : null,
+  );
 
   const handleSave = async (values: PartyInput, party: Party | null) => {
     if (party) {
