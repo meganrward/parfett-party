@@ -32,6 +32,9 @@ const party: Party = {
   prefixes: ['J', 'K'],
   tokenLength: 10,
   alphabet: 'ABCDEFGHJKLMNPQRTUVWXYZ23456789',
+  showGuestList: false,
+  showGuestCount: false,
+  hostsCanEditVisibility: false,
   createdAt: 't',
 };
 

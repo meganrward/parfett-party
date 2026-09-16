@@ -22,20 +22,24 @@ import { supabase } from './lib/supabase';
  * supabase-js still picks the tokens up on load (`detectSessionInUrl`), but only
  * `type=recovery` gets its own `PASSWORD_RECOVERY` event — an invite link fires the
  * ordinary `SIGNED_IN` event, so we also check the raw hash for `type=invite`.
+ *
+ * That hash check has to happen exactly once, read-only, at mount: supabase-js
+ * clears `window.location.hash` itself once it has parsed the tokens out of it,
+ * *before* it fires the auth event (see `_getSessionFromURL` in GoTrueClient) — so
+ * re-checking the hash from inside the `onAuthStateChange` callback would (racily)
+ * see it already blanked out. Worse, calling `navigate()` here — which rewrites the
+ * hash via HashRouter — before supabase-js has read it can wipe the tokens out from
+ * under it, so this must never navigate outside the subscription.
  */
 function useAuthRecoveryRedirect() {
   const navigate = useNavigate();
   useEffect(() => {
-    const isInviteOrRecoveryHash = () =>
+    const hadInviteOrRecoveryHash =
       /access_token=/.test(window.location.hash) &&
       /type=(invite|recovery)/.test(window.location.hash);
 
-    if (isInviteOrRecoveryHash()) {
-      navigate('/admin/set-password', { replace: true });
-    }
-
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY' || isInviteOrRecoveryHash()) {
+      if (event === 'PASSWORD_RECOVERY' || (event === 'SIGNED_IN' && hadInviteOrRecoveryHash)) {
         navigate('/admin/set-password', { replace: true });
       }
     });

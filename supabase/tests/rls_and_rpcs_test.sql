@@ -3,7 +3,7 @@
 
 begin;
 
-select plan(22);
+select plan(32);
 
 -- ---------------------------------------------------------------------
 -- Fixtures (created as the migration owner, bypassing RLS)
@@ -128,6 +128,103 @@ select is(
   (select rsvp_status from public.list_guests('JX4K') where name = 'David'),
   'not_going',
   'update_guest persists the new status'
+);
+
+reset role;
+
+-- ---------------------------------------------------------------------
+-- Guest visibility: defaults, party-wide RPCs, and who may flip the flags
+-- ---------------------------------------------------------------------
+set local role anon;
+
+select is(
+  (select show_guest_list from public.get_qr('JX4K')),
+  false,
+  'get_qr defaults show_guest_list to false'
+);
+
+select is(
+  (select party_guest_count from public.get_qr('JX4K')),
+  null,
+  'get_qr reports no party_guest_count while show_guest_count is off'
+);
+
+reset role;
+
+-- Host B has no access to Christmas at all.
+set local role authenticated;
+set local request.jwt.claims = '{"sub":"33333333-3333-3333-3333-333333333333","role":"authenticated"}';
+
+select throws_ok(
+  $$ select public.set_guest_visibility('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', true, true) $$,
+  '42501', null,
+  'a host with no access to the party cannot change its guest visibility'
+);
+
+reset role;
+
+-- Host A can access Christmas, but the admin has not allowed hosts to edit visibility yet.
+set local role authenticated;
+set local request.jwt.claims = '{"sub":"22222222-2222-2222-2222-222222222222","role":"authenticated"}';
+
+select throws_ok(
+  $$ select public.set_guest_visibility('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', true, true) $$,
+  '42501', null,
+  'a host cannot change guest visibility unless the admin has allowed it'
+);
+
+reset role;
+
+-- The admin turns visibility on for Christmas.
+set local role authenticated;
+set local request.jwt.claims = '{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated"}';
+
+select lives_ok(
+  $$ select public.set_guest_visibility('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', true, true) $$,
+  'the admin can always change guest visibility'
+);
+
+reset role;
+
+set local role anon;
+
+select is(
+  (select show_guest_list from public.get_qr('JX4K')),
+  true,
+  'get_qr reflects show_guest_list once turned on'
+);
+
+select lives_ok(
+  $$ select public.add_guest('JX4K', 'Erin', 'going') $$,
+  'add_guest inserts a going guest for the party-wide list'
+);
+
+select is(
+  (select count(*)::int from public.list_party_guests('JX4K')),
+  1,
+  'list_party_guests only lists guests who are going, once switched on'
+);
+
+reset role;
+
+-- The admin lets hosts self-serve; Host A can now flip the flags too.
+set local role authenticated;
+set local request.jwt.claims = '{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated"}';
+
+select lives_ok(
+  $$ update public.parties set hosts_can_edit_visibility = true
+     where id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' $$,
+  'admin allows hosts to edit visibility for Christmas'
+);
+
+reset role;
+
+set local role authenticated;
+set local request.jwt.claims = '{"sub":"22222222-2222-2222-2222-222222222222","role":"authenticated"}';
+
+select lives_ok(
+  $$ select public.set_guest_visibility('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', false, false) $$,
+  'a host can change guest visibility once the admin has allowed it'
 );
 
 reset role;

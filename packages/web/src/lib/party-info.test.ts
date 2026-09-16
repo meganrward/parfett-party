@@ -1,7 +1,7 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('./api', () => ({ getQr: vi.fn() }));
+vi.mock('./api', () => ({ getQr: vi.fn(), listPartyGuests: vi.fn() }));
 
 import * as api from './api';
 import { usePartyInfo } from './party-info';
@@ -14,6 +14,9 @@ const qr = {
   location: 'Home',
   description: null,
   guestCount: 0,
+  showGuestList: false,
+  showGuestCount: false,
+  partyGuestCount: null,
 };
 
 beforeEach(() => {
@@ -48,6 +51,19 @@ describe('usePartyInfo', () => {
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.info).toEqual(qr);
     expect(result.current.redirectTo).toBeNull();
+    expect(api.listPartyGuests).not.toHaveBeenCalled();
+  });
+
+  it('loads party-wide guest names when the party shows its guest list', async () => {
+    vi.mocked(api.getQr).mockResolvedValue({ ...qr, showGuestList: true });
+    vi.mocked(api.listPartyGuests).mockResolvedValue([
+      { id: 'g1', name: 'Alex' },
+      { id: 'g2', name: null },
+    ]);
+    const { result } = renderHook(() => usePartyInfo('christmas', 'JX4KZZ'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(api.listPartyGuests).toHaveBeenCalledWith('JX4KZZ');
+    expect(result.current.partyGuestNames).toEqual(['Alex', 'Guest']);
   });
 
   it('surfaces an error', async () => {

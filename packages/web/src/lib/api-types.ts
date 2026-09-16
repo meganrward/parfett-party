@@ -9,6 +9,10 @@ export interface QrInfo {
   location: string | null;
   description: string | null;
   guestCount: number;
+  showGuestList: boolean;
+  showGuestCount: boolean;
+  /** Party-wide count of guests going; null when showGuestCount is false. */
+  partyGuestCount: number | null;
 }
 
 export interface Party {
@@ -23,6 +27,9 @@ export interface Party {
   prefixes: string[];
   tokenLength: number;
   alphabet: string;
+  showGuestList: boolean;
+  showGuestCount: boolean;
+  hostsCanEditVisibility: boolean;
   createdAt: string;
 }
 
@@ -37,6 +44,14 @@ export interface PartyInput {
   prefixes?: string[];
   tokenLength?: number;
   alphabet?: string;
+  showGuestList?: boolean;
+  showGuestCount?: boolean;
+  hostsCanEditVisibility?: boolean;
+}
+
+export interface GuestVisibility {
+  showGuestList: boolean;
+  showGuestCount: boolean;
 }
 
 export interface HostRow {

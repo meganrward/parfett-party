@@ -233,6 +233,35 @@ function PartyEditor({
 
           <div
             style={{
+              borderTop: '1px solid var(--pf-color-border)',
+              paddingTop: 'var(--pf-space-4)',
+            }}
+          >
+            <Stack gap={3}>
+              <Heading level={3}>Guest visibility</Heading>
+              <p style={{ ...muted, margin: 0, fontSize: 'var(--pf-font-size-sm)' }}>
+                What guests see about the party as a whole, beyond who&apos;s on their own card.
+              </p>
+              <Checkbox
+                label="Show the full guest list to guests"
+                checked={form.showGuestList}
+                onChange={(e) => set('showGuestList', e.target.checked)}
+              />
+              <Checkbox
+                label="Show the total number of guests to guests"
+                checked={form.showGuestCount}
+                onChange={(e) => set('showGuestCount', e.target.checked)}
+              />
+              <Checkbox
+                label="Let hosts change these two settings later"
+                checked={form.hostsCanEditVisibility}
+                onChange={(e) => set('hostsCanEditVisibility', e.target.checked)}
+              />
+            </Stack>
+          </div>
+
+          <div
+            style={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',

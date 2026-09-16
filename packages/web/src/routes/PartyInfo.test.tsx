@@ -24,7 +24,11 @@ function makeState(over: Partial<PartyInfoState> = {}): PartyInfoState {
       location: '12 Parfett Street, London',
       description: 'BYOB; santa hats mandatory.',
       guestCount: 3,
+      showGuestList: false,
+      showGuestCount: false,
+      partyGuestCount: null,
     },
+    partyGuestNames: [],
     ...over,
   };
 }

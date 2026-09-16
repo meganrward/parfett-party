@@ -62,6 +62,9 @@ describe('validatePartyForm', () => {
       prefixes: ['J', 'K'],
       tokenLength: 10,
       alphabet: DEFAULT_ALPHABET,
+      showGuestList: false,
+      showGuestCount: false,
+      hostsCanEditVisibility: false,
     });
   });
 
@@ -111,6 +114,9 @@ describe('partyToForm', () => {
       prefixes: ['J', 'K'],
       tokenLength: 12,
       alphabet: DEFAULT_ALPHABET,
+      showGuestList: false,
+      showGuestCount: false,
+      hostsCanEditVisibility: false,
       createdAt: 't',
     };
     expect(partyToForm(party)).toMatchObject({

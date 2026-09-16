@@ -17,6 +17,7 @@ import type {
   GenerateQrCodesInput,
   GenerateQrCodesResult,
   GuestPatch,
+  GuestVisibility,
   Party,
   PartyInput,
   QrCodeWithGuests,
@@ -73,6 +74,13 @@ export async function getQr(token: string): Promise<QrInfo | null> {
 export async function listGuests(token: string): Promise<Guest[]> {
   const rows = await rpc('list_guests', { p_token: normaliseToken(token) });
   return rows.map(mapGuest);
+}
+
+/** Party-wide list of guests going, across every card. Empty when the party has it switched off. */
+export async function listPartyGuests(
+  token: string,
+): Promise<{ id: string; name: string | null }[]> {
+  return rpc('list_party_guests', { p_token: normaliseToken(token) });
 }
 
 export async function addGuest(args: {
@@ -176,6 +184,18 @@ export async function updateParty(id: string, patch: Partial<PartyInput>): Promi
     fail(error.message);
   }
   return mapParty(data);
+}
+
+/** Admin (always) or host (only when the party allows it): flip the party's guest visibility flags. */
+export async function setGuestVisibility(
+  partyId: string,
+  visibility: GuestVisibility,
+): Promise<void> {
+  await rpc('set_guest_visibility', {
+    p_party_id: partyId,
+    p_show_guest_list: visibility.showGuestList,
+    p_show_guest_count: visibility.showGuestCount,
+  });
 }
 
 export async function listHosts(): Promise<HostRow[]> {

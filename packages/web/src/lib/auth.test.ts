@@ -33,6 +33,18 @@ describe('signIn', () => {
     });
     await expect(signIn('meg@example.com', 'wrong')).rejects.toThrow('Invalid login credentials');
   });
+
+  it('explains a "Failed to fetch" error returned by Supabase', async () => {
+    mockSupabase.auth.signInWithPassword.mockResolvedValue({
+      error: { message: 'Failed to fetch' },
+    });
+    await expect(signIn('meg@example.com', 'hunter2')).rejects.toThrow('Could not reach Supabase');
+  });
+
+  it('explains a "Failed to fetch" error thrown before Supabase returns', async () => {
+    mockSupabase.auth.signInWithPassword.mockRejectedValue(new TypeError('Failed to fetch'));
+    await expect(signIn('meg@example.com', 'hunter2')).rejects.toThrow('Could not reach Supabase');
+  });
 });
 
 describe('signOut', () => {

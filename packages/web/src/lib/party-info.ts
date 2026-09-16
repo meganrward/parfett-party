@@ -2,13 +2,21 @@ import { useEffect, useState } from 'react';
 import * as api from './api';
 import { canonicalRedirectPath } from './slug';
 import { isPlausibleToken } from './token';
+import { guestDisplayName } from './guests';
 import type { QrInfo } from './api-types';
+
+async function loadPartyGuestNames(token: string): Promise<string[]> {
+  const rows = await api.listPartyGuests(token);
+  return rows.map(guestDisplayName);
+}
 
 export interface PartyInfoState {
   loading: boolean;
   notFound: boolean;
   redirectTo: string | null;
   info: QrInfo | null;
+  /** Names of everyone going to the party; empty unless info.showGuestList is true. */
+  partyGuestNames: string[];
   error: string | null;
 }
 
@@ -21,6 +29,7 @@ export function usePartyInfo(slug: string, token: string): PartyInfoState {
   const [notFound, setNotFound] = useState(false);
   const [redirectTo, setRedirectTo] = useState<string | null>(null);
   const [info, setInfo] = useState<QrInfo | null>(null);
+  const [partyGuestNames, setPartyGuestNames] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -29,6 +38,27 @@ export function usePartyInfo(slug: string, token: string): PartyInfoState {
     setNotFound(false);
     setRedirectTo(null);
     setError(null);
+    setPartyGuestNames([]);
+
+    const applyQr = async (qr: QrInfo) => {
+      const redirect = canonicalRedirectPath({
+        urlSlug: slug,
+        canonicalSlug: qr.slug,
+        token,
+        suffix: '/info',
+      });
+      if (redirect) {
+        setRedirectTo(redirect);
+        return;
+      }
+      setInfo(qr);
+      if (qr.showGuestList) {
+        const names = await loadPartyGuestNames(token);
+        if (active) {
+          setPartyGuestNames(names);
+        }
+      }
+    };
 
     const load = async () => {
       if (!isPlausibleToken(token)) {
@@ -47,17 +77,7 @@ export function usePartyInfo(slug: string, token: string): PartyInfoState {
           setNotFound(true);
           return;
         }
-        const redirect = canonicalRedirectPath({
-          urlSlug: slug,
-          canonicalSlug: qr.slug,
-          token,
-          suffix: '/info',
-        });
-        if (redirect) {
-          setRedirectTo(redirect);
-          return;
-        }
-        setInfo(qr);
+        await applyQr(qr);
       } catch (err) {
         if (active) {
           setError(err instanceof Error ? err.message : 'Something went wrong');
@@ -75,5 +95,5 @@ export function usePartyInfo(slug: string, token: string): PartyInfoState {
     };
   }, [slug, token]);
 
-  return { loading, notFound, redirectTo, info, error };
+  return { loading, notFound, redirectTo, info, partyGuestNames, error };
 }

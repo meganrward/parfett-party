@@ -19,6 +19,9 @@ const qr = {
   location: null,
   description: null,
   guestCount: 0,
+  showGuestList: false,
+  showGuestCount: false,
+  partyGuestCount: null,
 };
 
 const guest = (

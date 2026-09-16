@@ -85,11 +85,14 @@ export type Database = {
           description: string | null
           event_end: string | null
           event_start: string | null
+          hosts_can_edit_visibility: boolean
           id: string
           location: string | null
           name: string
           prefixes: string[]
           qr_count: number
+          show_guest_count: boolean
+          show_guest_list: boolean
           slug: string
           token_length: number
         }
@@ -99,11 +102,14 @@ export type Database = {
           description?: string | null
           event_end?: string | null
           event_start?: string | null
+          hosts_can_edit_visibility?: boolean
           id?: string
           location?: string | null
           name: string
           prefixes?: string[]
           qr_count?: number
+          show_guest_count?: boolean
+          show_guest_list?: boolean
           slug: string
           token_length?: number
         }
@@ -113,11 +119,14 @@ export type Database = {
           description?: string | null
           event_end?: string | null
           event_start?: string | null
+          hosts_can_edit_visibility?: boolean
           id?: string
           location?: string | null
           name?: string
           prefixes?: string[]
           qr_count?: number
+          show_guest_count?: boolean
+          show_guest_list?: boolean
           slug?: string
           token_length?: number
         }
@@ -208,7 +217,10 @@ export type Database = {
           found: boolean
           guest_count: number
           location: string
+          party_guest_count: number
           party_name: string
+          show_guest_count: boolean
+          show_guest_list: boolean
           slug: string
         }[]
       }
@@ -221,6 +233,18 @@ export type Database = {
           name: string
           rsvp_status: string
         }[]
+      }
+      list_party_guests: {
+        Args: { p_token: string }
+        Returns: { id: string; name: string | null }[]
+      }
+      set_guest_visibility: {
+        Args: {
+          p_party_id: string
+          p_show_guest_count: boolean
+          p_show_guest_list: boolean
+        }
+        Returns: undefined
       }
       update_guest: {
         Args: {

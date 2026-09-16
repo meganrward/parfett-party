@@ -23,6 +23,9 @@ export interface PartyForm {
   prefixes: string; // comma/space separated
   tokenLength: string;
   alphabet: string;
+  showGuestList: boolean;
+  showGuestCount: boolean;
+  hostsCanEditVisibility: boolean;
 }
 
 export const BLANK_PARTY_FORM: PartyForm = {
@@ -36,6 +39,9 @@ export const BLANK_PARTY_FORM: PartyForm = {
   prefixes: '',
   tokenLength: '10',
   alphabet: DEFAULT_ALPHABET,
+  showGuestList: false,
+  showGuestCount: false,
+  hostsCanEditVisibility: false,
 };
 
 /** ISO string -> value for <input type="datetime-local"> ('' when empty/invalid). */
@@ -81,6 +87,9 @@ export function partyToForm(party: Party): PartyForm {
     prefixes: party.prefixes.join(', '),
     tokenLength: String(party.tokenLength),
     alphabet: party.alphabet,
+    showGuestList: party.showGuestList,
+    showGuestCount: party.showGuestCount,
+    hostsCanEditVisibility: party.hostsCanEditVisibility,
   };
 }
 
@@ -142,6 +151,9 @@ export function validatePartyForm(form: PartyForm): PartyFormResult {
       prefixes: parsePrefixes(form.prefixes),
       tokenLength,
       alphabet,
+      showGuestList: form.showGuestList,
+      showGuestCount: form.showGuestCount,
+      hostsCanEditVisibility: form.hostsCanEditVisibility,
     },
   };
 }

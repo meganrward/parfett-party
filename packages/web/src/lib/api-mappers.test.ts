@@ -48,6 +48,9 @@ describe('mapQrInfo', () => {
         location: 'Home',
         description: null,
         guest_count: 3,
+        show_guest_list: true,
+        show_guest_count: true,
+        party_guest_count: 12,
       }),
     ).toEqual({
       slug: 'christmas',
@@ -57,6 +60,9 @@ describe('mapQrInfo', () => {
       location: 'Home',
       description: null,
       guestCount: 3,
+      showGuestList: true,
+      showGuestCount: true,
+      partyGuestCount: 12,
     });
   });
 });
@@ -73,6 +79,9 @@ const partyRow = {
   prefixes: ['J', 'K'],
   token_length: 10,
   alphabet: 'ABCDEFGHJKLMNPQRTUVWXYZ23456789',
+  show_guest_list: false,
+  show_guest_count: false,
+  hosts_can_edit_visibility: false,
   created_at: '2026-01-01T00:00:00Z',
 };
 
@@ -87,6 +96,9 @@ describe('qrInfoToCalendarEvent', () => {
         location: 'Home',
         description: 'BYOB',
         guestCount: 3,
+        showGuestList: false,
+        showGuestCount: false,
+        partyGuestCount: null,
       }),
     ).toEqual({
       name: 'Parfett Christmas',

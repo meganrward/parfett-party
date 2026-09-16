@@ -21,6 +21,9 @@ export interface GetQrRowish {
   location?: string | null;
   description?: string | null;
   guest_count?: number | null;
+  show_guest_list?: boolean | null;
+  show_guest_count?: boolean | null;
+  party_guest_count?: number | null;
 }
 
 /** Coerce a free-form DB string into our RsvpStatus union. */
@@ -53,6 +56,9 @@ export function mapQrInfo(row: GetQrRowish): QrInfo {
     location: row.location ?? null,
     description: row.description ?? null,
     guestCount: row.guest_count ?? 0,
+    showGuestList: row.show_guest_list ?? false,
+    showGuestCount: row.show_guest_count ?? false,
+    partyGuestCount: row.party_guest_count ?? null,
   };
 }
 
@@ -80,6 +86,9 @@ export function mapParty(row: PartyRow): Party {
     prefixes: row.prefixes ?? [],
     tokenLength: row.token_length,
     alphabet: row.alphabet,
+    showGuestList: row.show_guest_list,
+    showGuestCount: row.show_guest_count,
+    hostsCanEditVisibility: row.hosts_can_edit_visibility,
     createdAt: row.created_at,
   };
 }
@@ -122,5 +131,10 @@ export function partyInputToRow(input: Partial<PartyInput>): PartyWrite {
   if (input.prefixes !== undefined) row.prefixes = input.prefixes;
   if (input.tokenLength !== undefined) row.token_length = input.tokenLength;
   if (input.alphabet !== undefined) row.alphabet = input.alphabet;
+  if (input.showGuestList !== undefined) row.show_guest_list = input.showGuestList;
+  if (input.showGuestCount !== undefined) row.show_guest_count = input.showGuestCount;
+  if (input.hostsCanEditVisibility !== undefined) {
+    row.hosts_can_edit_visibility = input.hostsCanEditVisibility;
+  }
   return row as PartyWrite;
 }
