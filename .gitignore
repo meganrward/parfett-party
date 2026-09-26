@@ -9,3 +9,4 @@ storybook-static/
 .DS_Store
 *.log
 .vite/
+design_handoff_parfett_party/*
