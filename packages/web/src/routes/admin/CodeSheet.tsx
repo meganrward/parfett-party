@@ -2,16 +2,16 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import QRCode from 'qrcode';
 import { Button, Checkbox, Heading, Stack } from '@parfett/design-system';
-import { groupCodesByPrefix, onlyUnusedCodes, useAdminParty } from '../../lib/admin-guests';
-import { handedOutByLabel } from '../../lib/prefixes';
-import { inviteUrl } from '../../lib/invite-url';
+import { groupCodesByPrefix, onlyUnusedCodes, useAdminParty } from '../../lib/hooks/admin-guests';
+import { handedOutByLabel } from '../../lib/utils/prefixes';
+import { inviteUrl } from '../../lib/utils/invite-url';
 import {
   movePlacement,
   readImageFile,
   resizePlacement,
   useCardArt,
   type QrPlacement,
-} from '../../lib/card-art';
+} from '../../lib/hooks/card-art';
 import './CodeSheet.css';
 
 /** Standard business-card width; height comes from the artwork's aspect ratio. */

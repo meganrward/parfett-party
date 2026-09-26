@@ -2,7 +2,7 @@ import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('../../lib/api', () => ({
+vi.mock('../../lib/supabase/api', () => ({
   listHosts: vi.fn(),
   upsertHost: vi.fn(),
   invokeCreateHost: vi.fn(),
@@ -10,7 +10,7 @@ vi.mock('../../lib/api', () => ({
   invokeResendHostInvite: vi.fn(),
 }));
 
-import * as api from '../../lib/api';
+import * as api from '../../lib/supabase/api';
 import { Hosts } from './Hosts';
 
 beforeEach(() => {

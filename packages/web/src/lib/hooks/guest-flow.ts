@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import * as api from './api';
-import { canonicalRedirectPath } from './slug';
-import { isPlausibleToken } from './token';
-import { getMyGuestIds, rememberMyGuestId } from './my-guests-store';
-import { sortGuests, type Guest, type RsvpStatus } from './guests';
-import type { QrInfo } from './api-types';
+import * as api from '../supabase/api';
+import { canonicalRedirectPath } from '../utils/slug';
+import { isPlausibleToken } from '../utils/token';
+import { getMyGuestIds, rememberMyGuestId } from '../utils/my-guests-store';
+import { sortGuests, type Guest, type RsvpStatus } from '../utils/guests';
+import type { QrInfo } from '../supabase/api-types';
 
 export interface GuestDraft {
   name: string | null;

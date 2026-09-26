@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
-import { supabase } from './supabase';
-import { getHost, listMyParties } from './api';
-import type { HostRow, Party } from './api-types';
+import { supabase } from '../supabase/supabase';
+import { getHost, listMyParties } from '../supabase/api';
+import type { HostRow, Party } from '../supabase/api-types';
 
 export type AdminRoleName = 'admin' | 'host';
 

@@ -1,7 +1,7 @@
 import { supabase } from './supabase';
 import type { Database } from './database.types';
-import { normaliseToken } from './token';
-import type { Guest, RsvpStatus } from './guests';
+import { normaliseToken } from '../utils/token';
+import type { Guest, RsvpStatus } from '../utils/guests';
 import {
   mapHost,
   mapGuest,

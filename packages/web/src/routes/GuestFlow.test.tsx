@@ -3,11 +3,11 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('../lib/guest-flow', () => ({ useGuestFlow: vi.fn() }));
+vi.mock('../lib/hooks/guest-flow', () => ({ useGuestFlow: vi.fn() }));
 
-import { useGuestFlow, type GuestFlowState } from '../lib/guest-flow';
+import { useGuestFlow, type GuestFlowState } from '../lib/hooks/guest-flow';
 import { GuestFlow } from './GuestFlow';
-import type { Guest } from '../lib/guests';
+import type { Guest } from '../lib/utils/guests';
 
 const actions = () => ({
   addGuest: vi.fn().mockResolvedValue(undefined),

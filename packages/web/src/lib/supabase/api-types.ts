@@ -1,4 +1,4 @@
-import type { Guest, RsvpStatus } from './guests';
+import type { Guest, RsvpStatus } from '../utils/guests';
 
 /** Party info as returned by the anonymous get_qr RPC. */
 export interface QrInfo {

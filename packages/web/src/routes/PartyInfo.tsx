@@ -8,16 +8,16 @@ import {
   GuestUnknownCodeState,
   guestHeadingStyle,
 } from '../components/guest';
-import { usePartyInfo } from '../lib/party-info';
-import { qrInfoToCalendarEvent } from '../lib/api-mappers';
+import { usePartyInfo } from '../lib/hooks/party-info';
+import { qrInfoToCalendarEvent } from '../lib/supabase/api-mappers';
 import {
   googleCalendarUrl,
   hasCalendarInfo,
   icsContent,
   icsDownloadFilename,
   inviteWhenParts,
-} from '../lib/calendar';
-import { downloadTextFile } from '../lib/download';
+} from '../lib/utils/calendar';
+import { downloadTextFile } from '../lib/utils/download';
 import { Game } from '../game';
 
 const detailBody = {

@@ -2,9 +2,9 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('../../lib/roles', () => ({ useMyParties: vi.fn(), useAdminRole: vi.fn() }));
+vi.mock('../../lib/hooks/roles', () => ({ useMyParties: vi.fn(), useAdminRole: vi.fn() }));
 
-import { useAdminRole, useMyParties } from '../../lib/roles';
+import { useAdminRole, useMyParties } from '../../lib/hooks/roles';
 import { PartyPicker } from './PartyPicker';
 
 const parties = [

@@ -19,11 +19,11 @@ import {
   type GuestEntry,
   type GuestFilters,
   type StatusFilter,
-} from '../../lib/admin-guests';
-import { handedOutByLabel } from '../../lib/prefixes';
-import { guestDisplayName, rsvpStatusLabel, rsvpStatusTone } from '../../lib/guests';
-import * as api from '../../lib/api';
-import type { GuestPatch, Party } from '../../lib/api-types';
+} from '../../lib/hooks/admin-guests';
+import { handedOutByLabel } from '../../lib/utils/prefixes';
+import { guestDisplayName, rsvpStatusLabel, rsvpStatusTone } from '../../lib/utils/guests';
+import * as api from '../../lib/supabase/api';
+import type { GuestPatch, Party } from '../../lib/supabase/api-types';
 
 const RSVP_OPTIONS = [
   { label: 'Going', value: 'going' },

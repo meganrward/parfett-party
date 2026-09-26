@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
-import * as api from './api';
-import { isValidSlug, normaliseSlug } from './slug';
-import type { Party, PartyInput } from './api-types';
+import * as api from '../supabase/api';
+import { isValidSlug, normaliseSlug } from '../utils/slug';
+import type { Party, PartyInput } from '../supabase/api-types';
 
 /** Ambiguity-free default (no 0/O/1/I/5/S); matches the DB column default. */
 export const DEFAULT_ALPHABET = 'ABCDEFGHJKLMNPQRTUVWXYZ23456789';

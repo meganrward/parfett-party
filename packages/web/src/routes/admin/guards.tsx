@@ -1,5 +1,5 @@
 import { Navigate, Outlet, useParams } from 'react-router-dom';
-import { useAdminRole, useMyParties } from '../../lib/roles';
+import { useAdminRole, useMyParties } from '../../lib/hooks/roles';
 
 function Checking() {
   return (

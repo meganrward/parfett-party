@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Card, Heading, Stack, TextInput } from '@parfett/design-system';
-import { supabase } from '../../lib/supabase';
-import { activateOwnHost } from '../../lib/api';
+import { supabase } from '../../lib/supabase/supabase';
+import { activateOwnHost } from '../../lib/supabase/api';
 
 /**
  * Shown after following an invite/recovery email link. `useAuthRecoveryRedirect`

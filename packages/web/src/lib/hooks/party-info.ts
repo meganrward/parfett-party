@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import * as api from './api';
-import { canonicalRedirectPath } from './slug';
-import { isPlausibleToken } from './token';
-import { guestDisplayName } from './guests';
-import type { QrInfo } from './api-types';
+import * as api from '../supabase/api';
+import { canonicalRedirectPath } from '../utils/slug';
+import { isPlausibleToken } from '../utils/token';
+import { guestDisplayName } from '../utils/guests';
+import type { QrInfo } from '../supabase/api-types';
 
 async function loadPartyGuestNames(token: string): Promise<string[]> {
   const rows = await api.listPartyGuests(token);

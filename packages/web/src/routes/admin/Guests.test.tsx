@@ -3,14 +3,14 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('../../lib/admin-guests', async (importOriginal) => ({
+vi.mock('../../lib/hooks/admin-guests', async (importOriginal) => ({
   ...(await importOriginal<object>()),
   useAdminParty: vi.fn(),
 }));
 
-import { useAdminParty, type AdminPartyState } from '../../lib/admin-guests';
+import { useAdminParty, type AdminPartyState } from '../../lib/hooks/admin-guests';
 import { Guests } from './Guests';
-import type { QrCodeWithGuests } from '../../lib/api-types';
+import type { QrCodeWithGuests } from '../../lib/supabase/api-types';
 
 const guest = (
   id: string,

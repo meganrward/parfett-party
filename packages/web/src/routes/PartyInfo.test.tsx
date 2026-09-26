@@ -3,11 +3,11 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('../lib/party-info', () => ({ usePartyInfo: vi.fn() }));
-vi.mock('../lib/download', () => ({ downloadTextFile: vi.fn() }));
+vi.mock('../lib/hooks/party-info', () => ({ usePartyInfo: vi.fn() }));
+vi.mock('../lib/utils/download', () => ({ downloadTextFile: vi.fn() }));
 
-import { usePartyInfo, type PartyInfoState } from '../lib/party-info';
-import { downloadTextFile } from '../lib/download';
+import { usePartyInfo, type PartyInfoState } from '../lib/hooks/party-info';
+import { downloadTextFile } from '../lib/utils/download';
 import { PartyInfo } from './PartyInfo';
 
 function makeState(over: Partial<PartyInfoState> = {}): PartyInfoState {

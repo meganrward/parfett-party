@@ -16,7 +16,7 @@ const { auth, mockSupabase } = vi.hoisted(() => {
   return { auth: a, mockSupabase: supabase };
 });
 
-vi.mock('./lib/supabase', () => ({ supabase: mockSupabase }));
+vi.mock('./lib/supabase/supabase', () => ({ supabase: mockSupabase }));
 
 const { App } = await import('./App');
 

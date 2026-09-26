@@ -1,6 +1,6 @@
 import type { Database } from './database.types';
-import type { CalendarEvent } from './calendar';
-import type { Guest, RsvpStatus } from './guests';
+import type { CalendarEvent } from '../utils/calendar';
+import type { Guest, RsvpStatus } from '../utils/guests';
 import type { HostRow, Party, PartyInput, QrCodeWithGuests, QrInfo } from './api-types';
 
 type PartyRow = Database['public']['Tables']['parties']['Row'];

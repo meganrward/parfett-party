@@ -1,9 +1,9 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('./api', () => ({ getQr: vi.fn(), listPartyGuests: vi.fn() }));
+vi.mock('../supabase/api', () => ({ getQr: vi.fn(), listPartyGuests: vi.fn() }));
 
-import * as api from './api';
+import * as api from '../supabase/api';
 import { usePartyInfo } from './party-info';
 
 const qr = {

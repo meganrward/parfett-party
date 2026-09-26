@@ -21,10 +21,10 @@ const { auth, mockSupabase } = vi.hoisted(() => {
   return { auth: a, mockSupabase: supabase };
 });
 
-vi.mock('./supabase', () => ({ supabase: mockSupabase }));
-vi.mock('./api', () => ({ getHost: vi.fn(), listMyParties: vi.fn() }));
+vi.mock('../supabase/supabase', () => ({ supabase: mockSupabase }));
+vi.mock('../supabase/api', () => ({ getHost: vi.fn(), listMyParties: vi.fn() }));
 
-import { getHost, listMyParties } from './api';
+import { getHost, listMyParties } from '../supabase/api';
 import { adminRole, useAdminRole, useMyParties, useSession } from './roles';
 
 const sessionFor = (id: string) => ({ user: { id } });

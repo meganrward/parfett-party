@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Link, Outlet } from 'react-router-dom';
 import { Button, Card, Heading, Stack } from '@parfett/design-system';
-import { useAdminRole, useSession } from '../../lib/roles';
-import { signOut } from '../../lib/auth';
+import { useAdminRole, useSession } from '../../lib/hooks/roles';
+import { signOut } from '../../lib/supabase/auth';
 import { Login } from './Login';
 
 function Centered({ children }: { children: React.ReactNode }) {

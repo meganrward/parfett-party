@@ -1,14 +1,14 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('./api', () => ({
+vi.mock('../supabase/api', () => ({
   getQr: vi.fn(),
   listGuests: vi.fn(),
   addGuest: vi.fn(),
   updateGuest: vi.fn(),
 }));
 
-import * as api from './api';
+import * as api from '../supabase/api';
 import { useGuestFlow } from './guest-flow';
 
 const qr = {

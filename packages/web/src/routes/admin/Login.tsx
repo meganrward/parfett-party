@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button, Card, Heading, Stack, TextInput } from '@parfett/design-system';
-import { signIn } from '../../lib/auth';
+import { signIn } from '../../lib/supabase/auth';
 
 /**
  * H1 — the front door. Shown by AdminLayout whenever there is no session, on the

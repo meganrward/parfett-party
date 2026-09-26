@@ -12,7 +12,7 @@ import { Parties } from './routes/admin/Parties';
 import { Hosts } from './routes/admin/Hosts';
 import { SetPassword } from './routes/admin/SetPassword';
 import { RequirePartyAccess, RequireAdmin } from './routes/admin/guards';
-import { supabase } from './lib/supabase';
+import { supabase } from './lib/supabase/supabase';
 
 /**
  * Supabase's invite/recovery links land on the site root with tokens appended as a

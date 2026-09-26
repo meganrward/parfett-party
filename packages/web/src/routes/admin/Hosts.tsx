@@ -1,7 +1,7 @@
 import { useEffect, useState, type CSSProperties } from 'react';
 import { Button, Card, Heading, Stack, StatusPill, TextInput } from '@parfett/design-system';
-import * as api from '../../lib/api';
-import type { HostRow } from '../../lib/api-types';
+import * as api from '../../lib/supabase/api';
+import type { HostRow } from '../../lib/supabase/api-types';
 
 const muted = { color: 'var(--pf-color-text-muted)' } as const;
 

@@ -6,19 +6,19 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 vi.mock('qrcode', () => ({
   default: { toDataURL: vi.fn().mockResolvedValue('data:image/png;base64,FAKE') },
 }));
-vi.mock('../../lib/admin-guests', async (importOriginal) => ({
+vi.mock('../../lib/hooks/admin-guests', async (importOriginal) => ({
   ...(await importOriginal<object>()),
   useAdminParty: vi.fn(),
 }));
-vi.mock('../../lib/card-art', async (importOriginal) => ({
+vi.mock('../../lib/hooks/card-art', async (importOriginal) => ({
   ...(await importOriginal<object>()),
   readImageFile: vi.fn(),
 }));
 
-import { useAdminParty, type AdminPartyState } from '../../lib/admin-guests';
-import { readImageFile } from '../../lib/card-art';
+import { useAdminParty, type AdminPartyState } from '../../lib/hooks/admin-guests';
+import { readImageFile } from '../../lib/hooks/card-art';
 import { CodeSheet } from './CodeSheet';
-import type { QrCodeWithGuests } from '../../lib/api-types';
+import type { QrCodeWithGuests } from '../../lib/supabase/api-types';
 
 const usedGuest = { id: 'g1', name: 'Ellie', rsvpStatus: 'going' as const, createdAt: 't' };
 

@@ -3,11 +3,11 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('../../lib/parties-admin', async (importOriginal) => ({
+vi.mock('../../lib/hooks/parties-admin', async (importOriginal) => ({
   ...(await importOriginal<object>()),
   useSuperParties: vi.fn(),
 }));
-vi.mock('../../lib/api', () => ({
+vi.mock('../../lib/supabase/api', () => ({
   listHosts: vi.fn(),
   listPartyHosts: vi.fn(),
   setPartyHosts: vi.fn(),
@@ -15,10 +15,10 @@ vi.mock('../../lib/api', () => ({
   listQrCodesWithGuests: vi.fn(),
 }));
 
-import * as api from '../../lib/api';
-import { useSuperParties, type SuperPartiesState } from '../../lib/parties-admin';
+import * as api from '../../lib/supabase/api';
+import { useSuperParties, type SuperPartiesState } from '../../lib/hooks/parties-admin';
 import { Parties } from './Parties';
-import type { Party } from '../../lib/api-types';
+import type { Party } from '../../lib/supabase/api-types';
 
 const party: Party = {
   id: 'p1',

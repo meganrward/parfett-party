@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
-import * as api from './api';
-import type { GuestPatch, Party, QrCodeWithGuests } from './api-types';
-import { sortGuests, type Guest, type RsvpStatus } from './guests';
+import * as api from '../supabase/api';
+import type { GuestPatch, Party, QrCodeWithGuests } from '../supabase/api-types';
+import { sortGuests, type Guest, type RsvpStatus } from '../utils/guests';
 
 // ---------------------------------------------------------------------------
 // Pure: flatten to one entry per guest response, then filter / summarise

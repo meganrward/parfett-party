@@ -2,9 +2,9 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('../../lib/roles', () => ({ useAdminRole: vi.fn(), useMyParties: vi.fn() }));
+vi.mock('../../lib/hooks/roles', () => ({ useAdminRole: vi.fn(), useMyParties: vi.fn() }));
 
-import { useAdminRole, useMyParties } from '../../lib/roles';
+import { useAdminRole, useMyParties } from '../../lib/hooks/roles';
 import { RequirePartyAccess, RequireAdmin } from './guards';
 
 beforeEach(() => {

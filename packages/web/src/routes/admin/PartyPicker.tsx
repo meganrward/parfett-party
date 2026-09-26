@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Card, Heading, Stack } from '@parfett/design-system';
-import { useAdminRole, useMyParties } from '../../lib/roles';
+import { useAdminRole, useMyParties } from '../../lib/hooks/roles';
 
 const muted = { color: 'var(--pf-color-text-muted)' } as const;
 

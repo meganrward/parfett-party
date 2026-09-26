@@ -3,14 +3,14 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('../../lib/roles', () => ({ useSession: vi.fn(), useAdminRole: vi.fn() }));
-vi.mock('../../lib/auth', () => ({
+vi.mock('../../lib/hooks/roles', () => ({ useSession: vi.fn(), useAdminRole: vi.fn() }));
+vi.mock('../../lib/supabase/auth', () => ({
   signIn: vi.fn(),
   signOut: vi.fn().mockResolvedValue(undefined),
 }));
 
-import { useAdminRole, useSession } from '../../lib/roles';
-import { signOut } from '../../lib/auth';
+import { useAdminRole, useSession } from '../../lib/hooks/roles';
+import { signOut } from '../../lib/supabase/auth';
 import { AdminLayout } from './AdminLayout';
 
 const session = { user: { id: 'u1' } } as never;

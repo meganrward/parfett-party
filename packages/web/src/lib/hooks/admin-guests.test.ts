@@ -11,7 +11,7 @@ import {
   summariseByPrefix,
   summariseCodes,
 } from './admin-guests';
-import type { QrCodeWithGuests } from './api-types';
+import type { QrCodeWithGuests } from '../supabase/api-types';
 
 let seq = 0;
 const nextId = (p: string) => {
@@ -138,14 +138,14 @@ describe('summariseByPrefix', () => {
 
 // ---------------------------------------------------------------------------
 
-vi.mock('./api', () => ({
+vi.mock('../supabase/api', () => ({
   getPartyBySlug: vi.fn(),
   listQrCodesWithGuests: vi.fn(),
   updateGuestAdmin: vi.fn(),
   deleteGuest: vi.fn(),
 }));
 
-import * as api from './api';
+import * as api from '../supabase/api';
 import { useAdminParty } from './admin-guests';
 
 const party = { id: 'p1', slug: 'christmas', name: 'Parfett Christmas' } as never;

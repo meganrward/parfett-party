@@ -11,10 +11,15 @@ import {
   useSuperParties,
   validatePartyForm,
   type PartyForm,
-} from '../../lib/parties-admin';
-import { onlyUnusedCodes } from '../../lib/admin-guests';
-import * as api from '../../lib/api';
-import type { HostRow, GenerateQrCodesResult, Party, PartyInput } from '../../lib/api-types';
+} from '../../lib/hooks/parties-admin';
+import { onlyUnusedCodes } from '../../lib/hooks/admin-guests';
+import * as api from '../../lib/supabase/api';
+import type {
+  HostRow,
+  GenerateQrCodesResult,
+  Party,
+  PartyInput,
+} from '../../lib/supabase/api-types';
 
 const muted = { color: 'var(--pf-color-text-muted)' } as const;
 const mono = { fontFamily: 'var(--pf-font-mono)' } as const;

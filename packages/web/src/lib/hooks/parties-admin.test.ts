@@ -13,7 +13,7 @@ import {
   toDatetimeLocal,
   validatePartyForm,
 } from './parties-admin';
-import type { Party } from './api-types';
+import type { Party } from '../supabase/api-types';
 
 describe('datetime-local conversion', () => {
   it('round-trips an ISO string (TZ=UTC in tests)', () => {
@@ -170,13 +170,13 @@ describe('new-party draft persistence', () => {
 
 // ---------------------------------------------------------------------------
 
-vi.mock('./api', () => ({
+vi.mock('../supabase/api', () => ({
   listMyParties: vi.fn(),
   createParty: vi.fn(),
   updateParty: vi.fn(),
 }));
 
-import * as api from './api';
+import * as api from '../supabase/api';
 import { useSuperParties } from './parties-admin';
 
 const party = { id: 'p1', slug: 'christmas', name: 'X' } as never;
