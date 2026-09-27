@@ -11,7 +11,17 @@ import { muted, mono } from './styles';
 // S2 QR panel
 // ---------------------------------------------------------------------------
 
-export function GeneratePanel({ party }: { party: Party }) {
+export function GeneratePanel({
+  party,
+  onGenerated,
+  showCodeSheetLink = true,
+}: {
+  party: Party;
+  /** Called after a successful generate/regenerate, so a caller can refresh its own code list. */
+  onGenerated?: () => void;
+  /** Hide when this panel is already shown on the code sheet page itself. */
+  showCodeSheetLink?: boolean;
+}) {
   const [busy, setBusy] = useState<null | 'append' | 'regenerate-unused'>(null);
   const [result, setResult] = useState<GenerateQrCodesResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -43,6 +53,7 @@ export function GeneratePanel({ party }: { party: Party }) {
     setResult(null);
     try {
       setResult(await api.invokeGenerateQrCodes({ partyId: party.id, mode }));
+      onGenerated?.();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Generation failed');
     } finally {
@@ -66,12 +77,14 @@ export function GeneratePanel({ party }: { party: Party }) {
           <Button variant="secondary" disabled={busy !== null} onClick={() => setConfirming(true)}>
             Regenerate unused
           </Button>
-          <Link
-            className="pf-button pf-button--ghost pf-button--md"
-            to={`/admin/${party.slug}/codes`}
-          >
-            Open code sheet
-          </Link>
+          {showCodeSheetLink ? (
+            <Link
+              className="pf-button pf-button--ghost pf-button--md"
+              to={`/admin/${party.slug}/codes`}
+            >
+              Open code sheet
+            </Link>
+          ) : null}
         </Stack>
         {error ? <span style={{ color: 'var(--pf-color-danger)' }}>{error}</span> : null}
         {result ? (

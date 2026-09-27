@@ -2,12 +2,18 @@ import { useMemo, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Button, Checkbox, Heading, Stack } from '@parfett/design-system';
 import { groupCodesByPrefix, onlyUnusedCodes, useAdminParty } from '../../lib/hooks/admin-guests';
-import { handedOutByLabel } from '../../lib/utils/prefixes';
 import { inviteUrl } from '../../lib/utils/invite-url';
 import { readImageFile, useCardArt } from '../../lib/hooks/card-art';
-import { BusinessCard, PlacementEditor, QrImage } from '../../components/admin/code-sheet';
+import {
+  BusinessCardBack,
+  CardBackControls,
+  CodeGroups,
+  DuplexPrintPages,
+  PlacementEditor,
+} from '../../components/admin/code-sheet';
+import { GeneratePanel } from '../../components/admin/parties';
 import { Page } from '../../components/admin/shared';
-import * as api from '../../lib/supabase/api';
+import { cardsPerPage, paginateForDuplex, type DuplexFlip } from '../../lib/utils/duplex-print';
 import './CodeSheet.css';
 
 /** Standard business-card width; height comes from the artwork's aspect ratio. */
@@ -20,28 +26,12 @@ export function CodeSheet() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [unusedOnly, setUnusedOnly] = useState(false);
   const [note, setNote] = useState<string | null>(null);
-  const [generating, setGenerating] = useState(false);
+  const [duplexFlip, setDuplexFlip] = useState<DuplexFlip>('long-edge');
 
   const groups = useMemo(() => {
     const shown = unusedOnly ? onlyUnusedCodes(state.codes) : state.codes;
     return groupCodesByPrefix(shown);
   }, [state.codes, unusedOnly]);
-
-  const onGenerate = async () => {
-    if (!state.party) {
-      return;
-    }
-    setNote(null);
-    setGenerating(true);
-    try {
-      await api.invokeGenerateQrCodes({ partyId: state.party.id, mode: 'append' });
-      await state.reload();
-    } catch (err) {
-      setNote(err instanceof Error ? err.message : 'Could not generate codes.');
-    } finally {
-      setGenerating(false);
-    }
-  };
 
   const onPickFile = async (file: File | undefined) => {
     if (!file) {
@@ -51,6 +41,22 @@ export function CodeSheet() {
     try {
       const { dataUrl, ratio } = await readImageFile(file);
       const persisted = cardArt.setArt(dataUrl, ratio);
+      if (!persisted) {
+        setNote('Loaded for this session only — the image is too large to remember.');
+      }
+    } catch {
+      setNote('Could not read that image. Try a PNG or JPEG.');
+    }
+  };
+
+  const onPickBackFile = async (file: File | undefined) => {
+    if (!file) {
+      return;
+    }
+    setNote(null);
+    try {
+      const { dataUrl, ratio } = await readImageFile(file);
+      const persisted = cardArt.setBackArt(dataUrl, ratio);
       if (!persisted) {
         setNote('Loaded for this session only — the image is too large to remember.');
       }
@@ -79,7 +85,13 @@ export function CodeSheet() {
   }
 
   const hasArt = cardArt.art !== null;
-  const firstCode = groups.flatMap((g) => g.codes)[0];
+  const hasBackArt = cardArt.backArt !== null;
+  const allCodes = groups.flatMap((g) => g.codes);
+  const firstCode = allCodes[0];
+  const cardHeightMm = CARD_WIDTH_MM / cardArt.ratio;
+  const { columns: duplexColumns, rows: duplexRows } = cardsPerPage(CARD_WIDTH_MM, cardHeightMm);
+  const duplexPages =
+    hasArt && hasBackArt ? paginateForDuplex(allCodes, duplexColumns, duplexRows, duplexFlip) : [];
 
   return (
     <main className="pf-code-sheet">
@@ -88,9 +100,6 @@ export function CodeSheet() {
         <Link className="pf-button pf-button--secondary pf-button--sm" to={`/admin/${slug}/guests`}>
           Guests
         </Link>
-        <Button size="sm" variant="secondary" disabled={generating} onClick={() => void onGenerate()}>
-          {generating ? 'Generating…' : `Generate ${state.party?.qrCount ?? ''} codes`}
-        </Button>
         <input
           ref={fileRef}
           type="file"
@@ -106,6 +115,15 @@ export function CodeSheet() {
             Remove card design
           </Button>
         ) : null}
+        {hasArt ? (
+          <CardBackControls
+            hasBackArt={hasBackArt}
+            duplexFlip={duplexFlip}
+            onPickBackFile={(file) => void onPickBackFile(file)}
+            onClearBackArt={() => cardArt.clearBackArt()}
+            onDuplexFlipChange={setDuplexFlip}
+          />
+        ) : null}
         <Checkbox
           label="Unused codes only"
           checked={unusedOnly}
@@ -115,6 +133,16 @@ export function CodeSheet() {
           Print
         </Button>
       </div>
+
+      {state.party ? (
+        <div className="pf-no-print" style={{ marginBottom: 'var(--pf-space-5)' }}>
+          <GeneratePanel
+            party={state.party}
+            onGenerated={() => void state.reload()}
+            showCodeSheetLink={false}
+          />
+        </div>
+      ) : null}
 
       {note ? (
         <p className="pf-no-print" style={{ color: 'var(--pf-color-text-muted)' }}>
@@ -130,13 +158,22 @@ export function CodeSheet() {
               Drag the QR onto the white space; drag its corner to resize. Every card uses this
               spot.
             </p>
-            <PlacementEditor
-              artUrl={cardArt.art!}
-              ratio={cardArt.ratio}
-              qrValue={inviteUrl(slug, firstCode.token)}
-              placement={cardArt.placement}
-              onChange={cardArt.setPlacement}
-            />
+            <Stack direction="row" gap={4} wrap>
+              <PlacementEditor
+                artUrl={cardArt.art!}
+                ratio={cardArt.ratio}
+                qrValue={inviteUrl(slug, firstCode.token)}
+                placement={cardArt.placement}
+                onChange={cardArt.setPlacement}
+              />
+              {hasBackArt ? (
+                <BusinessCardBack
+                  artUrl={cardArt.backArt!}
+                  widthMm={CARD_WIDTH_MM}
+                  heightMm={cardHeightMm}
+                />
+              ) : null}
+            </Stack>
           </Stack>
         </div>
       ) : null}
@@ -145,32 +182,28 @@ export function CodeSheet() {
         <p style={{ color: 'var(--pf-color-text-muted)' }}>No codes to show.</p>
       ) : null}
 
-      {groups.map(({ prefix, codes }) => (
-        <section key={prefix || 'none'} style={{ marginBottom: 'var(--pf-space-6)' }}>
-          <Heading level={3} className="pf-no-print">
-            {prefix ? handedOutByLabel(prefix) : 'No prefix'} · {codes.length}
-          </Heading>
-          <div className={hasArt ? 'pf-bcard-grid' : 'pf-code-grid'}>
-            {codes.map((code) =>
-              hasArt ? (
-                <BusinessCard
-                  key={code.id}
-                  artUrl={cardArt.art!}
-                  ratio={cardArt.ratio}
-                  qrValue={inviteUrl(slug, code.token)}
-                  placement={cardArt.placement}
-                  widthMm={CARD_WIDTH_MM}
-                />
-              ) : (
-                <div key={code.id} className="pf-code-card">
-                  <QrImage value={inviteUrl(slug, code.token)} />
-                  <code>{code.token}</code>
-                </div>
-              ),
-            )}
-          </div>
-        </section>
-      ))}
+      {hasBackArt ? (
+        <DuplexPrintPages
+          slug={slug}
+          pages={duplexPages}
+          columns={duplexColumns}
+          widthMm={CARD_WIDTH_MM}
+          heightMm={cardHeightMm}
+          frontArt={cardArt.art!}
+          frontRatio={cardArt.ratio}
+          placement={cardArt.placement}
+          backArt={cardArt.backArt!}
+        />
+      ) : (
+        <CodeGroups
+          slug={slug}
+          groups={groups}
+          art={cardArt.art}
+          ratio={cardArt.ratio}
+          placement={cardArt.placement}
+          widthMm={CARD_WIDTH_MM}
+        />
+      )}
     </main>
   );
 }

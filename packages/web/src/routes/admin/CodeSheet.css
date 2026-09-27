@@ -12,6 +12,13 @@
   margin-bottom: var(--pf-space-5);
 }
 
+.pf-code-sheet__duplex {
+  display: flex;
+  align-items: center;
+  gap: var(--pf-space-2);
+  font-size: var(--pf-font-size-sm);
+}
+
 .pf-code-sheet__setup {
   display: flex;
   flex-wrap: wrap;
@@ -111,7 +118,29 @@
   touch-action: none;
 }
 
+/* Duplex-aligned front/back pages — shown on screen as a print preview too */
+.pf-duplex-pages {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pf-space-6);
+}
+
+.pf-bcard-page {
+  display: grid;
+  gap: 6mm;
+  break-after: page;
+}
+
+.pf-bcard-page:last-child {
+  break-after: auto;
+}
+
+.pf-bcard--blank {
+  border: none;
+}
+
 @page {
+  size: A4;
   margin: 12mm;
 }
 
@@ -127,5 +156,8 @@
   }
   .pf-bcard {
     border-color: #ccc;
+  }
+  .pf-duplex-pages {
+    gap: 0;
   }
 }

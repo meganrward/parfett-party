@@ -14,11 +14,15 @@ vi.mock('../../lib/hooks/card-art', async (importOriginal) => ({
   ...(await importOriginal<object>()),
   readImageFile: vi.fn(),
 }));
+vi.mock('../../lib/supabase/api', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  listQrCodesWithGuests: vi.fn().mockResolvedValue([]),
+}));
 
 import { useAdminParty, type AdminPartyState } from '../../lib/hooks/admin-guests';
 import { readImageFile } from '../../lib/hooks/card-art';
 import { CodeSheet } from './CodeSheet';
-import type { QrCodeWithGuests } from '../../lib/supabase/api-types';
+import type { Party, QrCodeWithGuests } from '../../lib/supabase/api-types';
 
 const usedGuest = { id: 'g1', name: 'Ellie', rsvpStatus: 'going' as const, createdAt: 't' };
 
@@ -28,12 +32,30 @@ const codes: QrCodeWithGuests[] = [
   { id: 'c3', token: 'KCCC', prefix: 'K', guests: [] },
 ];
 
+const party: Party = {
+  id: 'p1',
+  slug: 'christmas',
+  name: 'Parfett Christmas',
+  eventStart: null,
+  eventEnd: null,
+  location: null,
+  description: null,
+  qrCount: 3,
+  prefixes: ['J', 'K'],
+  tokenLength: 4,
+  alphabet: 'ABCDEFGHJKMNPQRSTUVWXYZ',
+  showGuestList: true,
+  showGuestCount: true,
+  hostsCanEditVisibility: false,
+  createdAt: 't',
+};
+
 function makeState(over: Partial<AdminPartyState> = {}): AdminPartyState {
   return {
     loading: false,
     notFound: false,
     error: null,
-    party: { id: 'p1', slug: 'christmas', name: 'Parfett Christmas' } as never,
+    party,
     codes,
     reload: vi.fn().mockResolvedValue(undefined),
     editGuest: vi.fn().mockResolvedValue(undefined),

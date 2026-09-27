@@ -53,6 +53,8 @@ interface StoredCardArt {
   /** width / height of the artwork */
   ratio: number;
   placement: QrPlacement;
+  /** Optional back-of-card artwork; same dimensions as the front, no QR. */
+  back?: { art: string; ratio: number };
 }
 
 const STORE_PREFIX = 'parfett:card-art:';
@@ -68,6 +70,15 @@ function isPlacement(v: unknown): v is QrPlacement {
   );
 }
 
+function isBackArt(v: unknown): v is { art: string; ratio: number } {
+  return (
+    !!v &&
+    typeof v === 'object' &&
+    typeof (v as Record<string, unknown>).art === 'string' &&
+    typeof (v as Record<string, unknown>).ratio === 'number'
+  );
+}
+
 export function loadCardArt(slug: string): StoredCardArt | null {
   try {
     const raw = window.localStorage.getItem(keyFor(slug));
@@ -79,7 +90,8 @@ export function loadCardArt(slug: string): StoredCardArt | null {
       parsed &&
       typeof (parsed as StoredCardArt).art === 'string' &&
       typeof (parsed as StoredCardArt).ratio === 'number' &&
-      isPlacement((parsed as StoredCardArt).placement)
+      isPlacement((parsed as StoredCardArt).placement) &&
+      ((parsed as StoredCardArt).back === undefined || isBackArt((parsed as StoredCardArt).back))
     ) {
       return parsed as StoredCardArt;
     }
@@ -132,9 +144,14 @@ export interface CardArtState {
   art: string | null;
   ratio: number;
   placement: QrPlacement;
+  backArt: string | null;
+  backRatio: number;
   /** true = persisted, false = kept in memory only (too large) */
   setArt: (dataUrl: string, ratio: number) => boolean;
   setPlacement: (placement: QrPlacement) => void;
+  /** true = persisted, false = kept in memory only (too large) */
+  setBackArt: (dataUrl: string, ratio: number) => boolean;
+  clearBackArt: () => void;
   clear: () => void;
 }
 
@@ -152,12 +169,38 @@ export function useCardArt(slug: string): CardArtState {
         art: dataUrl,
         ratio,
         placement: stored?.placement ?? DEFAULT_PLACEMENT,
+        back: stored?.back,
       };
       setStored(next);
       return saveCardArt(slug, next);
     },
     [slug, stored],
   );
+
+  const setBackArt = useCallback(
+    (dataUrl: string, ratio: number) => {
+      const next: StoredCardArt = {
+        art: stored?.art ?? '',
+        ratio: stored?.ratio ?? DEFAULT_RATIO,
+        placement: stored?.placement ?? DEFAULT_PLACEMENT,
+        back: { art: dataUrl, ratio },
+      };
+      setStored(next);
+      return saveCardArt(slug, next);
+    },
+    [slug, stored],
+  );
+
+  const clearBackArt = useCallback(() => {
+    setStored((prev) => {
+      if (!prev) {
+        return prev;
+      }
+      const next = { ...prev, back: undefined };
+      saveCardArt(slug, next);
+      return next;
+    });
+  }, [slug]);
 
   const setPlacement = useCallback(
     (placement: QrPlacement) => {
@@ -182,8 +225,12 @@ export function useCardArt(slug: string): CardArtState {
     art: stored?.art ?? null,
     ratio: stored?.ratio ?? DEFAULT_RATIO,
     placement: stored?.placement ?? DEFAULT_PLACEMENT,
+    backArt: stored?.back?.art ?? null,
+    backRatio: stored?.back?.ratio ?? DEFAULT_RATIO,
     setArt,
     setPlacement,
+    setBackArt,
+    clearBackArt,
     clear,
   };
 }
