@@ -1,23 +1,16 @@
 import { Link, Navigate, useParams } from 'react-router-dom';
-import { Button, Card, DotRule, Heading, Stack } from '@parfett/design-system';
+import { Card, DotRule, Heading, Stack } from '@parfett/design-system';
 import {
   GuestEyebrow,
   GuestErrorState,
   GuestLoadingState,
   GuestScreen,
   GuestUnknownCodeState,
-  guestHeadingStyle,
 } from '../components/guest';
+import { WhenAndWhere, WhosComing, AddToCalendar } from '../components/party-info';
 import { usePartyInfo } from '../lib/hooks/party-info';
 import { qrInfoToCalendarEvent } from '../lib/supabase/api-mappers';
-import {
-  googleCalendarUrl,
-  hasCalendarInfo,
-  icsContent,
-  icsDownloadFilename,
-  inviteWhenParts,
-} from '../lib/utils/calendar';
-import { downloadTextFile } from '../lib/utils/download';
+import { inviteWhenParts } from '../lib/utils/calendar';
 import { Game } from '../game';
 
 const detailBody = {
@@ -27,118 +20,6 @@ const detailBody = {
   color: 'var(--pf-guest-muted)',
   textWrap: 'pretty',
 } as const;
-
-const addressStyle = { margin: 0, fontSize: 16, color: 'var(--pf-guest-muted)' } as const;
-
-function WhosComing({ count, names }: { count: number | null; names: string[] }) {
-  if (count === null && names.length === 0) {
-    return null;
-  }
-  return (
-    <div
-      style={{
-        borderTop: '1px solid var(--pf-guest-border)',
-        padding: '20px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 10,
-        textAlign: 'center',
-      }}
-    >
-      <Heading level={3} style={{ ...guestHeadingStyle, fontSize: 21 }}>
-        Who&rsquo;s coming
-      </Heading>
-      {count !== null ? (
-        <p style={{ margin: 0, fontSize: 16, color: 'var(--pf-guest-muted)' }}>
-          {count} guest{count === 1 ? '' : 's'} so far
-        </p>
-      ) : null}
-      {names.length > 0 ? (
-        <p style={{ margin: 0, fontSize: 15.5, lineHeight: 1.6, color: 'var(--pf-guest-muted)' }}>
-          {names.join(', ')}
-        </p>
-      ) : null}
-    </div>
-  );
-}
-
-function WhenAndWhere({
-  when,
-  location,
-}: {
-  when: ReturnType<typeof inviteWhenParts>;
-  location: string | null;
-}) {
-  if (!when) {
-    return location ? <p style={addressStyle}>{location}</p> : null;
-  }
-  return (
-    <Stack gap={1} align="center">
-      <p
-        style={{
-          margin: 0,
-          fontFamily: 'var(--pf-guest-font-display)',
-          fontWeight: 500,
-          fontSize: 19,
-          letterSpacing: '0.03em',
-        }}
-      >
-        {when.time} · {when.day}
-        <sup style={{ fontSize: '0.6em' }}>{when.ordinal}</sup> {when.monthYear}
-      </p>
-      {location ? <p style={addressStyle}>{location}</p> : null}
-    </Stack>
-  );
-}
-
-function AddToCalendar({ event }: { event: ReturnType<typeof qrInfoToCalendarEvent> }) {
-  if (!hasCalendarInfo(event)) {
-    return null;
-  }
-  const googleUrl = googleCalendarUrl(event);
-  const ics = icsContent(event);
-
-  return (
-    <div
-      style={{
-        borderTop: '1px solid var(--pf-guest-blue-border)',
-        background: 'var(--pf-guest-blue-tint)',
-        padding: 20,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 12,
-      }}
-    >
-      <Heading level={3} style={{ ...guestHeadingStyle, fontSize: 21, textAlign: 'center' }}>
-        Add to calendar
-      </Heading>
-      {/* Buttons stack — never side by side; at 390px a row breaks the .ics label. */}
-      <Stack gap={2}>
-        {googleUrl ? (
-          <a
-            className="pf-button pf-button--primary pf-button--mobile"
-            href={googleUrl}
-            target="_blank"
-            rel="noreferrer"
-          >
-            Google Calendar
-          </a>
-        ) : null}
-        {ics ? (
-          <Button
-            variant="secondary"
-            size="mobile"
-            onClick={() =>
-              downloadTextFile(icsDownloadFilename(event), ics, 'text/calendar;charset=utf-8')
-            }
-          >
-            Apple / other (.ics)
-          </Button>
-        ) : null}
-      </Stack>
-    </div>
-  );
-}
 
 export function PartyInfo() {
   const params = useParams();

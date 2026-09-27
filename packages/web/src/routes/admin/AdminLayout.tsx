@@ -1,36 +1,8 @@
-import { useState } from 'react';
 import { Link, Outlet } from 'react-router-dom';
-import { Button, Card, Heading, Stack } from '@parfett/design-system';
+import { Card, Heading, Stack } from '@parfett/design-system';
 import { useAdminRole, useSession } from '../../lib/hooks/roles';
-import { signOut } from '../../lib/supabase/auth';
+import { Centered, SignOutButton } from '../../components/admin/layout';
 import { Login } from './Login';
-
-function Centered({ children }: { children: React.ReactNode }) {
-  return (
-    <main
-      style={{ maxWidth: 400, margin: '0 auto', padding: 'var(--pf-space-7) var(--pf-space-5)' }}
-    >
-      <p style={{ color: 'var(--pf-color-text-muted)' }}>{children}</p>
-    </main>
-  );
-}
-
-function SignOutButton() {
-  const [busy, setBusy] = useState(false);
-  return (
-    <Button
-      variant="ghost"
-      size="sm"
-      disabled={busy}
-      onClick={() => {
-        setBusy(true);
-        void signOut();
-      }}
-    >
-      Sign out
-    </Button>
-  );
-}
 
 /**
  * Gate for everything under /admin: shows the login form when signed out, a

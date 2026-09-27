@@ -1,15 +1,6 @@
 import { Navigate, Outlet, useParams } from 'react-router-dom';
 import { useAdminRole, useMyParties } from '../../lib/hooks/roles';
-
-function Checking() {
-  return (
-    <main
-      style={{ maxWidth: 400, margin: '0 auto', padding: 'var(--pf-space-7) var(--pf-space-5)' }}
-    >
-      <p style={{ color: 'var(--pf-color-text-muted)' }}>Checking access…</p>
-    </main>
-  );
-}
+import { Checking } from '../../components/admin/layout';
 
 /** Only super-admins may see the wrapped routes. */
 export function RequireAdmin() {
