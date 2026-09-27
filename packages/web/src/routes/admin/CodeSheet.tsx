@@ -5,11 +5,10 @@ import { groupCodesByPrefix, onlyUnusedCodes, useAdminParty } from '../../lib/ho
 import { inviteUrl } from '../../lib/utils/invite-url';
 import { readImageFile, useCardArt } from '../../lib/hooks/card-art';
 import {
-  BusinessCardBack,
   CardBackControls,
   CodeGroups,
   DuplexPrintPages,
-  PlacementEditor,
+  QrPositionSetup,
 } from '../../components/admin/code-sheet';
 import { GeneratePanel } from '../../components/admin/parties';
 import { Page } from '../../components/admin/shared';
@@ -124,14 +123,6 @@ export function CodeSheet() {
             onDuplexFlipChange={setDuplexFlip}
           />
         ) : null}
-        <Checkbox
-          label="Unused codes only"
-          checked={unusedOnly}
-          onChange={(e) => setUnusedOnly(e.target.checked)}
-        />
-        <Button size="sm" onClick={() => window.print()}>
-          Print
-        </Button>
       </div>
 
       {state.party ? (
@@ -151,59 +142,57 @@ export function CodeSheet() {
       ) : null}
 
       {hasArt && firstCode ? (
-        <div className="pf-code-sheet__setup pf-no-print">
-          <Stack gap={2}>
-            <Heading level={3}>QR position</Heading>
-            <p style={{ margin: 0, color: 'var(--pf-color-text-muted)' }}>
-              Drag the QR onto the white space; drag its corner to resize. Every card uses this
-              spot.
-            </p>
-            <Stack direction="row" gap={4} wrap>
-              <PlacementEditor
-                artUrl={cardArt.art!}
-                ratio={cardArt.ratio}
-                qrValue={inviteUrl(slug, firstCode.token)}
-                placement={cardArt.placement}
-                onChange={cardArt.setPlacement}
-              />
-              {hasBackArt ? (
-                <BusinessCardBack
-                  artUrl={cardArt.backArt!}
-                  widthMm={CARD_WIDTH_MM}
-                  heightMm={cardHeightMm}
-                />
-              ) : null}
-            </Stack>
-          </Stack>
-        </div>
+        <QrPositionSetup
+          frontArt={cardArt.art!}
+          frontRatio={cardArt.ratio}
+          qrValue={inviteUrl(slug, firstCode.token)}
+          placement={cardArt.placement}
+          onPlacementChange={cardArt.setPlacement}
+          backArt={cardArt.backArt}
+          widthMm={CARD_WIDTH_MM}
+          heightMm={cardHeightMm}
+        />
       ) : null}
 
       {groups.length === 0 ? (
         <p style={{ color: 'var(--pf-color-text-muted)' }}>No codes to show.</p>
       ) : null}
 
-      {hasBackArt ? (
-        <DuplexPrintPages
-          slug={slug}
-          pages={duplexPages}
-          columns={duplexColumns}
-          widthMm={CARD_WIDTH_MM}
-          heightMm={cardHeightMm}
-          frontArt={cardArt.art!}
-          frontRatio={cardArt.ratio}
-          placement={cardArt.placement}
-          backArt={cardArt.backArt!}
+      <div className="pf-print-only">
+        {hasBackArt ? (
+          <DuplexPrintPages
+            slug={slug}
+            pages={duplexPages}
+            columns={duplexColumns}
+            widthMm={CARD_WIDTH_MM}
+            heightMm={cardHeightMm}
+            frontArt={cardArt.art!}
+            frontRatio={cardArt.ratio}
+            placement={cardArt.placement}
+            backArt={cardArt.backArt!}
+          />
+        ) : (
+          <CodeGroups
+            slug={slug}
+            groups={groups}
+            art={cardArt.art}
+            ratio={cardArt.ratio}
+            placement={cardArt.placement}
+            widthMm={CARD_WIDTH_MM}
+          />
+        )}
+      </div>
+
+      <div className="pf-code-sheet__footer pf-no-print">
+        <Checkbox
+          label="Unused codes only"
+          checked={unusedOnly}
+          onChange={(e) => setUnusedOnly(e.target.checked)}
         />
-      ) : (
-        <CodeGroups
-          slug={slug}
-          groups={groups}
-          art={cardArt.art}
-          ratio={cardArt.ratio}
-          placement={cardArt.placement}
-          widthMm={CARD_WIDTH_MM}
-        />
-      )}
+        <Button size="sm" onClick={() => window.print()}>
+          Print
+        </Button>
+      </div>
     </main>
   );
 }

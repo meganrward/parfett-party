@@ -12,6 +12,15 @@
   margin-bottom: var(--pf-space-5);
 }
 
+.pf-code-sheet__footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--pf-space-4);
+  margin-top: var(--pf-space-5);
+}
+
 .pf-code-sheet__duplex {
   display: flex;
   align-items: center;
@@ -118,7 +127,11 @@
   touch-action: none;
 }
 
-/* Duplex-aligned front/back pages — shown on screen as a print preview too */
+/* The actual cards to print — the QR position box on screen is enough; this is print-only */
+.pf-print-only {
+  display: none;
+}
+
 .pf-duplex-pages {
   display: flex;
   flex-direction: column;
@@ -156,6 +169,9 @@
   }
   .pf-bcard {
     border-color: #ccc;
+  }
+  .pf-print-only {
+    display: block;
   }
   .pf-duplex-pages {
     gap: 0;
