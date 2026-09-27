@@ -7,6 +7,7 @@ import { inviteUrl } from '../../lib/utils/invite-url';
 import { readImageFile, useCardArt } from '../../lib/hooks/card-art';
 import { BusinessCard, PlacementEditor, QrImage } from '../../components/admin/code-sheet';
 import { Page } from '../../components/admin/shared';
+import * as api from '../../lib/supabase/api';
 import './CodeSheet.css';
 
 /** Standard business-card width; height comes from the artwork's aspect ratio. */
@@ -19,11 +20,28 @@ export function CodeSheet() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [unusedOnly, setUnusedOnly] = useState(false);
   const [note, setNote] = useState<string | null>(null);
+  const [generating, setGenerating] = useState(false);
 
   const groups = useMemo(() => {
     const shown = unusedOnly ? onlyUnusedCodes(state.codes) : state.codes;
     return groupCodesByPrefix(shown);
   }, [state.codes, unusedOnly]);
+
+  const onGenerate = async () => {
+    if (!state.party) {
+      return;
+    }
+    setNote(null);
+    setGenerating(true);
+    try {
+      await api.invokeGenerateQrCodes({ partyId: state.party.id, mode: 'append' });
+      await state.reload();
+    } catch (err) {
+      setNote(err instanceof Error ? err.message : 'Could not generate codes.');
+    } finally {
+      setGenerating(false);
+    }
+  };
 
   const onPickFile = async (file: File | undefined) => {
     if (!file) {
@@ -70,6 +88,9 @@ export function CodeSheet() {
         <Link className="pf-button pf-button--secondary pf-button--sm" to={`/admin/${slug}/guests`}>
           Guests
         </Link>
+        <Button size="sm" variant="secondary" disabled={generating} onClick={() => void onGenerate()}>
+          {generating ? 'Generating…' : `Generate ${state.party?.qrCount ?? ''} codes`}
+        </Button>
         <input
           ref={fileRef}
           type="file"
